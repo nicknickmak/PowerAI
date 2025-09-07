@@ -1,0 +1,19 @@
+# Lifting Analytics App Alembic Configuration
+
+This folder contains Alembic migration scripts and configuration for the Postgres database used by the FastAPI backend.
+
+- Alembic manages schema changes and migrations for your database.
+- Migration scripts are in the `versions/` subfolder.
+- The Alembic environment is configured in `env.py`.
+- See `alembic.ini` in the project root for connection settings.
+
+## Usage:
+
+1. To create a new migration:
+   alembic revision --autogenerate -m "Describe your change"
+2. To apply migrations:
+   alembic upgrade head
+3. To downgrade:
+   alembic downgrade -1
+
+For more details, see the Alembic documentation: https://alembic.sqlalchemy.org/en/latest/
