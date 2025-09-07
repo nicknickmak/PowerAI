@@ -1,0 +1,212 @@
+import React, { useState } from "react";
+import "./App.css";
+import { WorkoutInput } from "./components/WorkoutInput";
+import { ExerciseTabs } from "./components/ExerciseTabs";
+
+const BACKEND_URL = "http://localhost:8000"; // Update if needed
+const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
+
+async function sendWorkoutToBackend(workout: any[]) {
+  // Example endpoint: POST /query (see backend)
+  const res = await fetch(`${BACKEND_URL}/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query: workout }),
+  });
+  return res.json();
+}
+
+function parseWorkoutInput(input: string) {
+  // Simple parser: returns array of exercises with sets
+  const lines = input
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const result: { name: string; sets: any[] }[] = [];
+  let currentExercise: { name: string; sets: any[] } | null = null;
+  lines.forEach((line) => {
+    if (/^[A-Z ]+$/.test(line)) {
+      if (currentExercise) result.push(currentExercise);
+      currentExercise = { name: line, sets: [] };
+    } else if (/^\d+[xX]\d+/.test(line)) {
+      const [weight, reps] = line.split(/[xX]/);
+      currentExercise?.sets.push({
+        weight: Number(weight),
+        reps: Number(reps),
+        note: line.includes("dropset") ? "dropset" : "",
+      });
+    } else if (currentExercise) {
+      currentExercise.sets.push({ note: line });
+    }
+  });
+  if (currentExercise) result.push(currentExercise);
+  return result;
+}
+
+function App() {
+  const [input, setInput] = useState("");
+  const [parsed, setParsed] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<any>(null);
+  const [error, setError] = useState("");
+  const [backendResult, setBackendResult] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<"workout" | "exercises">(
+    "workout"
+  );
+  const [activeMuscle, setActiveMuscle] = useState<string>(MUSCLE_GROUPS[0]);
+  const [exercises, setExercises] = useState<any[]>([]);
+
+  const fetchExercises = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${BACKEND_URL}/exercises`, {
+        method: "GET",
+      });
+      const data = await res.json();
+      setExercises(data.exercises || []);
+    } catch (e) {
+      setError("Failed to fetch exercises from backend.");
+    }
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    if (activeTab === "exercises") {
+      fetchExercises();
+    }
+  }, [activeTab]);
+
+  const handleParse = () => {
+    setParsed(parseWorkoutInput(input));
+    setError("");
+  };
+
+  const handleSubmit = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${BACKEND_URL}/summary/weekly`, {
+        method: "GET",
+      });
+      const statsData = await res.json();
+      setStats(statsData.summary || {});
+    } catch (e) {
+      setError("Failed to connect to backend.");
+    }
+    setLoading(false);
+  };
+
+  const handleSendWorkout = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await sendWorkoutToBackend(parsed);
+      setBackendResult(result);
+    } catch (e) {
+      setError("Failed to send workout to backend.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="App">
+      <header
+        className="App-header no-vertical-center"
+        style={{
+          background: "#222",
+          borderRadius: 16,
+          margin: "32px auto",
+          maxWidth: 700,
+          boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
+          padding: 24,
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: "Inter, Arial, sans-serif",
+            fontWeight: 900,
+            fontSize: 36,
+            color: "#00df00",
+            marginBottom: 10,
+            letterSpacing: 1,
+          }}
+        >
+          PowerAI
+        </h1>
+        <nav
+          style={{
+            marginBottom: 28,
+            display: "flex",
+            justifyContent: "center",
+            gap: 16,
+          }}
+        >
+          <button
+            onClick={() => setActiveTab("workout")}
+            style={{
+              fontWeight: activeTab === "workout" ? "bold" : "normal",
+              background: activeTab === "workout" ? "#00df00" : "#333",
+              color: activeTab === "workout" ? "#222" : "#e7e7e7",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 32px",
+              fontSize: 18,
+              boxShadow:
+                activeTab === "workout"
+                  ? "0 2px 8px rgba(0,223,0,0.08)"
+                  : "none",
+              transition: "all 0.2s",
+              cursor: "pointer",
+            }}
+          >
+            Workout
+          </button>
+          <button
+            onClick={() => setActiveTab("exercises")}
+            style={{
+              fontWeight: activeTab === "exercises" ? "bold" : "normal",
+              background: activeTab === "exercises" ? "#00df00" : "#333",
+              color: activeTab === "exercises" ? "#222" : "#e7e7e7",
+              border: "none",
+              borderRadius: 8,
+              padding: "10px 32px",
+              fontSize: 18,
+              boxShadow:
+                activeTab === "exercises"
+                  ? "0 2px 8px rgba(0,223,0,0.08)"
+                  : "none",
+              transition: "all 0.2s",
+              cursor: "pointer",
+            }}
+          >
+            Exercises
+          </button>
+        </nav>
+        {activeTab === "workout" ? (
+          <WorkoutInput
+            input={input}
+            setInput={setInput}
+            handleParse={handleParse}
+            handleSubmit={handleSubmit}
+            handleSendWorkout={handleSendWorkout}
+            loading={loading}
+            parsed={parsed}
+            error={error}
+            stats={stats}
+            backendResult={backendResult}
+          />
+        ) : (
+          <ExerciseTabs
+            muscleGroups={MUSCLE_GROUPS}
+            activeMuscle={activeMuscle}
+            setActiveMuscle={setActiveMuscle}
+            exercises={exercises}
+          />
+        )}
+      </header>
+    </div>
+  );
+}
+
+export default App;
