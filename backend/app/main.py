@@ -4,10 +4,10 @@ from app.api import endpoints
 
 app = FastAPI()
 
-# Allow requests from localhost:3001 (React dev server)
+# Allow requests from localhost:3000 (React dev server)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3001"],
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]

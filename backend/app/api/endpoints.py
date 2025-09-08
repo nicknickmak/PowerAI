@@ -1,6 +1,7 @@
 # API endpoints for lifting analytics app
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import List
 from app.services.ai import process_query
 from datetime import datetime
 from app.db import SessionLocal
@@ -17,10 +18,10 @@ class WorkoutSet(BaseModel):
 
 class WorkoutExercise(BaseModel):
     name: str
-    sets: list[WorkoutSet]
+    sets: List[WorkoutSet]
 
 class QueryRequest(BaseModel):
-    query: list[WorkoutExercise]
+    query: List[WorkoutExercise]
 
 class QueryResponse(BaseModel):
     result: str
@@ -45,6 +46,7 @@ def get_exercises():
     db = SessionLocal()
     exercises_out = []
     exercises = db.query(Exercise).all()
+
     for ex in exercises:
         # Find most recent set for this exercise
         last_set = db.query(Set).filter(Set.exercise_id == ex.id).order_by(desc(Set.timestamp)).first()
@@ -58,7 +60,9 @@ def get_exercises():
             sets_out = []
         exercises_out.append({
             "name": ex.name,
-            "muscle": ex.primary_muscle or ex.category,
+            "equipment": ex.equipment,
+            "primaryMuscle": ex.primary_muscle,
+            "secondaryMuscle": ex.secondary_muscle,
             "lastDate": last_date,
             "sets": sets_out
         })
