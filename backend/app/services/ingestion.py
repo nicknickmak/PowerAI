@@ -22,7 +22,13 @@ def ingest_workout(session_date, location, exercises):
     for ex in exercises:
         exercise = db.query(Exercise).filter_by(name=ex["name"]).first()
         if not exercise:
-            exercise = Exercise(name=ex["name"])
+            exercise = Exercise(
+                name=ex["name"],
+                equipment=ex.get("equipment"),
+                primary_muscle=ex.get("primary_muscle"),
+                secondary_muscle=ex.get("secondary_muscle"),
+                
+            )
             db.add(exercise)
             db.commit()
             db.refresh(exercise)

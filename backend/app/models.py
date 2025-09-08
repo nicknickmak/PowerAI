@@ -14,7 +14,7 @@ class Exercise(Base):
     __tablename__ = "exercises"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
-    equipment = Column(String)  # Changed from 'category' to 'equipment'
+    equipment = Column(String)
     primary_muscle = Column(String)
     secondary_muscle = Column(String)
     sets = relationship("Set", back_populates="exercise")
