@@ -5,3 +5,8 @@ psycopg2-binary
 alembic
 pydantic
 python-dotenv
+numpy<2
+faiss-cpu
+sentence-transformers
+torch
+openai>=1.0.0

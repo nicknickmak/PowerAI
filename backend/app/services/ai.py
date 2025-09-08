@@ -1,5 +1,10 @@
 import re
-import difflib
+import os
+import numpy as np
+import faiss
+from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import Dict, Any
+
 EXERCISE_DICT = {
     # Chest
     "bench press": ("Chest", None, "Barbell", ["bench press", "bench", "bb bench press", "barbell bench press"]),
@@ -91,13 +96,175 @@ EXERCISE_DICT = {
     "superman": ("Core", None, "Bodyweight", ["superman", "supermans"]),
 }
 
-def exercise_normalizer(name: str):
-    for canonical, (primary, secondary, equipment, aliases) in EXERCISE_DICT.items():
-        if name.lower() == canonical:
-            return canonical, primary, secondary, equipment
-        if name.lower() in [a.lower() for a in aliases]:
-            return canonical, primary, secondary, equipment
-    return None, None, None, None
+EQUIPMENT_TYPES = [
+    "Barbell", 
+    "Dumbbell", 
+    "Bodyweight", 
+    "Machine", 
+    "Cable", 
+    "Smith Machine", 
+    "Ab Wheel", 
+    "Kettlebell", 
+    "yoga ball", 
+    "medicine ball", 
+    "resistance band"
+]
+
+EXERCISE_NAMES = list(EXERCISE_DICT.keys())
+# Use TF-IDF for simple embedding
+_vectorizer = TfidfVectorizer().fit(EXERCISE_NAMES)
+EXERCISE_EMBEDDINGS = _vectorizer.transform(EXERCISE_NAMES).toarray().astype('float32')
+FAISS_INDEX = faiss.IndexFlatL2(EXERCISE_EMBEDDINGS.shape[1])
+FAISS_INDEX.add(EXERCISE_EMBEDDINGS)
+
+def embed_text(text: str) -> np.ndarray:
+    """
+    Convert text to embedding using the same vectorizer as for EXERCISE_EMBEDDINGS.
+    """
+    # Clean input: lowercase, strip, collapse spaces
+    clean_text = re.sub(r'\s+', ' ', text.strip().lower())
+    embedding = _vectorizer.transform([clean_text]).toarray()[0]
+    return np.array(embedding, dtype='float32')
+
+def embedding_retriever(query: str, top_k: int = 5) -> list:
+    """
+    Retrieve top_k similar exercise names using embeddings and FAISS.
+    """
+    query_vec = embed_text(query)
+    D, I = FAISS_INDEX.search(np.array([query_vec]), top_k)
+    return [EXERCISE_NAMES[i] for i in I[0]]
+
+
+def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
+    """
+    Use LLM to select the most relevant exercise from candidates or create a new one.
+    candidates: List of dicts with keys: name, primary_muscle, secondary_muscle, equipment
+    original_exercise: The raw input exercise name
+    Returns a dict with keys: canonical_exercise, primary_muscle, secondary_muscle, equipment
+    """
+    try:
+        import openai
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+        import json
+
+        # Step 1: Filter by equipment if present in original_exercise
+        equipment_in_original = None
+        for eq in EQUIPMENT_TYPES:
+            if eq.lower() in original_exercise.lower():
+                equipment_in_original = eq
+                break
+        filtered_candidates = candidates
+        if equipment_in_original:
+            filtered_candidates = [c for c in candidates if c.get("equipment") and c["equipment"].lower() == equipment_in_original.lower()]
+            if not filtered_candidates:
+                filtered_candidates = candidates  # fallback to all if none match
+
+        # Step 2: Rank candidates by relevance using LLM (only select from given candidates)
+        candidate_names = [c["name"] for c in filtered_candidates]
+        ranking_prompt = (
+            f"Given the original exercise '{original_exercise}', rank the following candidate names by relevance: {json.dumps(candidate_names)}. "
+            "Return only the indices of the candidates sorted by relevance, as a JSON list. For example: [2, 0, 1] if candidate_names[2] is most relevant. "
+        )
+        response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": ranking_prompt}],
+            max_tokens=50,
+            temperature=0.2
+        )
+        content = response.choices[0].message.content
+        result = json.loads(content)
+
+        # Rearrange filtered_candidates in the order given by result (indices)
+        if isinstance(result, list) and all(isinstance(i, int) for i in result):
+            filtered_candidates = [filtered_candidates[i] for i in result if i < len(filtered_candidates)]
+
+        # Step 3: Check if the candidate is relevant enough, else add original exercise (LLM can format new if needed)
+        selected_candidate = filtered_candidates[0] if filtered_candidates else None
+        relevance_prompt = (
+            f"Given the original exercise '{original_exercise}' and the selected candidate {json.dumps(selected_candidate)}, "
+            "is the candidate relevant enough? If not, return a JSON object for the original exercise formatted as: "
+            "{'canonical_exercise': ..., 'primary_muscle': ..., 'secondary_muscle': ..., 'equipment': ...}. "
+            "Otherwise, return the candidate as is. "
+        )
+        response2 = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": relevance_prompt}],
+            max_tokens=50,
+            temperature=0.2
+        )
+        final_content = response2.choices[0].message.content
+        # Fix for single quotes in LLM output
+        if final_content.strip().startswith("{"):
+            final_content = final_content.replace("'", '"')
+        final_result = json.loads(final_content)
+        return {
+            "canonical_exercise": final_result.get("canonical_exercise"),
+            "primary_muscle": final_result.get("primary_muscle"),
+            "secondary_muscle": final_result.get("secondary_muscle"),
+            "equipment": final_result.get("equipment")
+        }
+    except Exception as e:
+        raise RuntimeError(f"LLM selection failed: {e}")
+
+def hybrid_normalize_exercise(raw_input: str) -> Dict[str, Any]:
+    """
+    Hybrid exercise normalization using dictionary lookup, embedding retrieval, and LLM selection.
+    raw_input: The raw input exercise name
+    Returns a dict with keys: canonical_exercise, primary_muscle, secondary_muscle, equipment
+    """
+    # Step 1: Dictionary lookup
+    # Ensure exercise_normalizer is defined before use
+    if 'exercise_normalizer' not in globals():
+        def exercise_normalizer(name: str):
+            for canonical, (primary, secondary, equipment, aliases) in EXERCISE_DICT.items():
+                if name.lower() == canonical:
+                    return canonical, primary, secondary, equipment
+                if name.lower() in [a.lower() for a in aliases]:
+                    return canonical, primary, secondary, equipment
+            return None, None, None, None
+    canonical, primary, secondary, equipment = exercise_normalizer(raw_input)
+
+    # Step 2: If found in dictionary, return immediately.
+    if canonical:
+        return {
+            "canonical_exercise": canonical,
+            "primary_muscle": primary,
+            "secondary_muscle": secondary,
+            "equipment": equipment
+        }
+    
+    # Step 3: If not found in dictionary, use embedding + LLM fallback
+    candidates = embedding_retriever(raw_input)
+    candidate_details = []
+    for c in candidates:
+        c_lower = c.lower()
+        details = EXERCISE_DICT.get(c_lower)
+        if details:
+            candidate_details.append({
+                "name": c_lower,
+                "primary_muscle": details[0],
+                "secondary_muscle": details[1],
+                "equipment": details[2]
+            })
+        else:
+            candidate_details.append({
+                "name": c_lower,
+                "primary_muscle": None,
+                "secondary_muscle": None,
+                "equipment": None
+            })
+    llm_result = llm_selector(candidate_details, raw_input)
+
+    canonical_exercise = llm_result["canonical_exercise"].lower() if llm_result["canonical_exercise"] else None
+    primary_muscle = llm_result["primary_muscle"].lower() if llm_result["primary_muscle"] else None
+    secondary_muscle = llm_result["secondary_muscle"].lower() if llm_result["secondary_muscle"] else None
+    equipment = llm_result["equipment"].lower() if llm_result["equipment"] else None
+    return {
+        "canonical_exercise": canonical_exercise,
+        "primary_muscle": primary_muscle,
+        "secondary_muscle": secondary_muscle,
+        "equipment": equipment
+    }
 
 def summarize_stats(stats):
     """Stub for AI-powered natural language recap."""
@@ -110,7 +277,11 @@ def process_query(query: list, session_date=None, location=None):
     summaries = []
     norm_exercises = []
     for exercise in query:
-        norm_name, primary_muscle, secondary_muscle, equipment = exercise_normalizer(exercise.name)
+        norm_result = hybrid_normalize_exercise(exercise.name)
+        norm_name = norm_result.get("canonical_exercise")
+        primary_muscle = norm_result.get("primary_muscle")
+        secondary_muscle = norm_result.get("secondary_muscle")
+        equipment = norm_result.get("equipment")
         total_sets = len(exercise.sets)
         total_reps = sum(s.reps or 0 for s in exercise.sets if s.reps is not None)
         max_weight = max((s.weight or 0) for s in exercise.sets if s.weight is not None)
