@@ -1,5 +1,6 @@
 import React from "react";
 import { Notification } from "./Notification";
+import { MuscleGroupLastWorkout } from "./MuscleGroupLastWorkout";
 
 interface WorkoutInputProps {
   input: string;
@@ -56,12 +57,21 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
     >
       {/* Error notification at top */}
       {error && showError && (
-        <Notification type="error" message={error} onDismiss={() => setShowError(false)} />
+        <Notification
+          type="error"
+          message={error}
+          onDismiss={() => setShowError(false)}
+        />
       )}
 
       {/* Success notification at top */}
       {showSuccess && (
-        <Notification type="success" message="Workout sent to backend successfully!" onDismiss={() => setShowSuccess(false)} top={error && showError ? 60 : 12} />
+        <Notification
+          type="success"
+          message="Workout sent to backend successfully!"
+          onDismiss={() => setShowSuccess(false)}
+          top={error && showError ? 60 : 12}
+        />
       )}
       {/* Loading spinner overlay */}
       {loading && (
@@ -423,58 +433,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
           </div>
         </div>
       )}
-      <div style={{ marginTop: 32 }}>
-        <h2
-          style={{
-            borderBottom: "1px solid #333",
-            paddingBottom: 4,
-            marginBottom: 8,
-          }}
-        >
-          Days Since Last Workout (per muscle group)
-        </h2>
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            maxWidth: 320,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          {/* Mock numbers for common muscle groups */}
-          {[
-            { name: "Chest", days: 3 },
-            { name: "Back", days: 5 },
-            { name: "Legs", days: 1 },
-            { name: "Shoulders", days: 7 },
-            { name: "Arms", days: 2 },
-            { name: "Core", days: 4 },
-          ].map((group) => (
-            <li
-              key={group.name}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                background: "#333",
-                borderRadius: 6,
-                padding: "8px 16px",
-                marginBottom: 8,
-                fontSize: 16,
-                fontWeight: "bold",
-                color: "#e7e7e7",
-              }}
-            >
-              <span>{group.name}</span>
-              <span style={{ color: "#00df00", fontSize: 18 }}>
-                {group.days}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <MuscleGroupLastWorkout />
     </div>
   );
 };
