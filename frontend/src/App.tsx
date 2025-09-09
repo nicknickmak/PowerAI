@@ -2,7 +2,11 @@ import React, { useState } from "react";
 import "./App.css";
 import { WorkoutInput } from "./components/WorkoutInput";
 import { ExerciseTabs } from "./components/ExerciseTabs";
-import { fetchExercises as apiFetchExercises, queryWorkout, submitWorkout } from "./services/apiService";
+import {
+  fetchExercises as apiFetchExercises,
+  queryWorkout,
+  submitWorkout,
+} from "./services/apiService";
 
 const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
@@ -58,7 +62,10 @@ function App() {
       const data = await apiFetchExercises();
       setExercises(data.exercises || []);
     } catch (e) {
-      setError("Failed to fetch exercises from backend.");
+      setError(
+        "Failed to fetch exercises from backend: " +
+          (e instanceof Error ? e.message : String(e))
+      );
     }
     setLoading(false);
   };
@@ -80,7 +87,11 @@ function App() {
       const data = await queryWorkout(parsedWorkout);
       setQueryResult(data.normalized || data);
     } catch (e) {
-      setError("Failed to get normalized workout from backend.");
+      setError(
+        `Failed to get normalized workout from backend: ${
+          e instanceof Error ? e.message : String(e)
+        }`
+      );
     }
     setLoading(false);
   };
@@ -92,7 +103,10 @@ function App() {
     try {
       await submitWorkout(normalized);
     } catch (e) {
-      setError("Failed to submit workout to backend.");
+      setError(
+        "Failed to submit workout to backend: " +
+          (e instanceof Error ? e.message : String(e))
+      );
     }
     setLoading(false);
   };
