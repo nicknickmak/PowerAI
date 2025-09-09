@@ -1,4 +1,5 @@
 import React from "react";
+import { Notification } from "./Notification";
 
 interface WorkoutInputProps {
   input: string;
@@ -55,124 +56,12 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
     >
       {/* Error notification at top */}
       {error && showError && (
-        <div
-          style={{
-            position: "absolute",
-            top: 12,
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#2a1a1a",
-            border: "1px solid #ff3333",
-            borderRadius: 10,
-            color: "#ffb3b3",
-            boxShadow: "0 2px 8px rgba(255,51,51,0.18)",
-            fontFamily: "Fira Mono, monospace",
-            fontSize: 15,
-            minWidth: 320,
-            maxWidth: 520,
-            zIndex: 20,
-            padding: "14px 24px 14px 18px",
-            display: "flex",
-            alignItems: "center",
-            animation: "fadeInDown 0.5s",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: "bold",
-              color: "#ff3333",
-              fontSize: 17,
-              marginRight: 12,
-            }}
-          >
-            Error:
-          </span>
-          <span
-            style={{ flex: 1, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-          >
-            {error}
-          </span>
-          <button
-            onClick={() => setShowError(false)}
-            style={{
-              marginLeft: 16,
-              background: "none",
-              border: "none",
-              color: "#ff3333",
-              fontWeight: "bold",
-              fontSize: 18,
-              cursor: "pointer",
-              padding: 0,
-            }}
-            aria-label="Dismiss error notification"
-          >
-            ×
-          </button>
-          <style>{`
-            @keyframes fadeInDown {
-              0% { opacity: 0; transform: translateY(-24px) translateX(-50%); }
-              100% { opacity: 1; transform: translateY(0) translateX(-50%); }
-            }
-          `}</style>
-        </div>
+        <Notification type="error" message={error} onDismiss={() => setShowError(false)} />
       )}
 
       {/* Success notification at top */}
       {showSuccess && (
-        <div
-          style={{
-            position: "absolute",
-            top: error && showError ? 60 : 12,
-            left: "50%",
-            transform: "translateX(-50%)",
-            background: "#1a2a1a",
-            border: "1px solid #00df00",
-            borderRadius: 10,
-            color: "#b3ffb3",
-            boxShadow: "0 2px 8px rgba(0,223,0,0.18)",
-            fontFamily: "Fira Mono, monospace",
-            fontSize: 15,
-            minWidth: 320,
-            maxWidth: 520,
-            zIndex: 20,
-            padding: "14px 24px 14px 18px",
-            display: "flex",
-            alignItems: "center",
-            animation: "fadeInDown 0.5s",
-          }}
-        >
-          <span
-            style={{
-              fontWeight: "bold",
-              color: "#00df00",
-              fontSize: 17,
-              marginRight: 12,
-            }}
-          >
-            Success:
-          </span>
-          <span
-            style={{ flex: 1, whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-          >
-            Workout sent to backend successfully!
-          </span>
-          <button
-            onClick={() => setShowSuccess(false)}
-            style={{
-              marginLeft: 16,
-              background: "none",
-              border: "none",
-              color: "#00df00",
-              fontWeight: "bold",
-              fontSize: 18,
-              cursor: "pointer",
-              padding: 0,
-            }}
-            aria-label="Dismiss success notification"
-          >
-            ×
-          </button>
-        </div>
+        <Notification type="success" message="Workout sent to backend successfully!" onDismiss={() => setShowSuccess(false)} top={error && showError ? 60 : 12} />
       )}
       {/* Loading spinner overlay */}
       {loading && (
