@@ -11,6 +11,7 @@ interface WorkoutInputProps {
   handleQuery: (input: string) => Promise<any>;
   handleConfirm: (normalized: any) => Promise<any>;
   handleCancel?: () => void;
+  muscleGroupRefresh?: number;
 }
 
 export const WorkoutInput: React.FC<WorkoutInputProps> = ({
@@ -22,6 +23,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
   handleQuery,
   handleConfirm,
   handleCancel,
+  muscleGroupRefresh,
 }) => {
   const [showError, setShowError] = React.useState(true);
   const [showSuccess, setShowSuccess] = React.useState(false);
@@ -433,7 +435,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
           </div>
         </div>
       )}
-      <MuscleGroupLastWorkout />
+      <MuscleGroupLastWorkout refresh={muscleGroupRefresh} />
     </div>
   );
 };

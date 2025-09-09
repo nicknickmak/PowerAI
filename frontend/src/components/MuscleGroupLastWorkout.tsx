@@ -11,10 +11,13 @@ function getDaysSince(dateStr: string | null): number | null {
   return diff >= 0 ? diff : null;
 }
 
-export const MuscleGroupLastWorkout: React.FC = () => {
+export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
+  refresh,
+}) => {
   const [recentByMuscle, setRecentByMuscle] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [expanded, setExpanded] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setLoading(true);
@@ -27,7 +30,7 @@ export const MuscleGroupLastWorkout: React.FC = () => {
         setError("Failed to fetch recent workouts by muscle.");
         setLoading(false);
       });
-  }, []);
+  }, [refresh]);
 
   const muscleNames = Object.keys(recentByMuscle || {});
 
@@ -84,7 +87,7 @@ export const MuscleGroupLastWorkout: React.FC = () => {
             listStyle: "none",
             padding: 0,
             margin: 0,
-            maxWidth: 320,
+            maxWidth: 420,
             marginLeft: "auto",
             marginRight: "auto",
           }}
@@ -92,31 +95,127 @@ export const MuscleGroupLastWorkout: React.FC = () => {
           {muscleNames.map((muscle) => {
             const info = recentByMuscle[muscle];
             const days = getDaysSince(info.lastDate);
+            const isExpanded = expanded === muscle;
             return (
               <li
                 key={muscle}
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
                   background: "#333",
                   borderRadius: 6,
-                  padding: "8px 16px",
                   marginBottom: 8,
                   fontSize: 16,
                   fontWeight: "bold",
                   color: "#e7e7e7",
+                  cursor: "pointer",
+                  boxShadow: isExpanded
+                    ? "0 2px 12px rgba(0,223,0,0.10)"
+                    : undefined,
+                  transition: "box-shadow 0.2s",
                 }}
+                onClick={() => setExpanded(isExpanded ? null : muscle)}
               >
-                <span style={{ textTransform: "capitalize" }}>{muscle}</span>
-                <span
+                <div
                   style={{
-                    color: days === null ? "#ff3333" : "#00df00",
-                    fontSize: 18,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 16px",
                   }}
                 >
-                  {days === null ? "No data" : days}
-                </span>
+                  <span
+                    style={{
+                      textTransform: "capitalize",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "inline-block",
+                        transition: "transform 0.2s",
+                        transform: isExpanded
+                          ? "rotate(90deg)"
+                          : "rotate(0deg)",
+                        fontSize: 13,
+                        color: "#e7e7e7",
+                        marginRight: 2,
+                      }}
+                      aria-label={isExpanded ? "Collapse" : "Expand"}
+                    >
+                      ▶
+                    </span>
+                    {muscle}
+                  </span>
+                  <span
+                    style={{
+                      color: days === null ? "#ff3333" : "#00df00",
+                      fontSize: 18,
+                    }}
+                  >
+                    {days === null ? "No data" : days}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    background: "#222",
+                    borderRadius: 6,
+                    margin: "8px 16px 8px 16px",
+                    padding: isExpanded ? "12px 16px" : "0 16px",
+                    color: "#e7e7e7",
+                    fontWeight: 400,
+                    fontSize: 15,
+                    maxHeight: isExpanded ? 500 : 0,
+                    opacity: isExpanded ? 1 : 0,
+                    overflow: "hidden",
+                    transition:
+                      "max-height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s cubic-bezier(0.4,0,0.2,1), padding 0.2s cubic-bezier(0.4,0,0.2,1)",
+                  }}
+                  aria-hidden={!isExpanded}
+                >
+                  {
+                    <>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Exercise:</strong> {info.exercise || "-"}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Equipment:</strong> {info.equipment || "-"}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Primary Muscle:</strong>{" "}
+                        {info.primaryMuscle || "-"}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Secondary Muscle:</strong>{" "}
+                        {info.secondaryMuscle || "-"}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Last Date:</strong> {info.lastDate || "-"}
+                      </div>
+                      <div style={{ marginBottom: 8 }}>
+                        <strong>Sets:</strong>
+                        <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                          {Array.isArray(info.sets) && info.sets.length > 0 ? (
+                            info.sets.map((set: any, idx: number) => (
+                              <li key={idx} style={{ marginBottom: 4 }}>
+                                <span style={{ color: "#00df00" }}>
+                                  Weight:
+                                </span>{" "}
+                                {set.weight ?? "-"} &nbsp;
+                                <span style={{ color: "#00df00" }}>
+                                  Reps:
+                                </span>{" "}
+                                {set.reps ?? "-"}
+                              </li>
+                            ))
+                          ) : (
+                            <li>-</li>
+                          )}
+                        </ul>
+                      </div>
+                    </>
+                  }
+                </div>
               </li>
             );
           })}

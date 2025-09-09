@@ -54,6 +54,7 @@ function App() {
   );
   const [activeMuscle, setActiveMuscle] = useState<string>(MUSCLE_GROUPS[0]);
   const [exercises, setExercises] = useState<any[]>([]);
+  const [muscleGroupRefresh, setMuscleGroupRefresh] = useState(Date.now());
 
   const fetchExercises = async () => {
     setLoading(true);
@@ -102,6 +103,7 @@ function App() {
     setError("");
     try {
       await submitWorkout(normalized);
+      setMuscleGroupRefresh(Date.now());
     } catch (e) {
       setError(
         "Failed to submit workout to backend: " +
@@ -198,6 +200,7 @@ function App() {
             handleQuery={handleQuery}
             handleConfirm={handleConfirm}
             handleCancel={handleCancel}
+            muscleGroupRefresh={muscleGroupRefresh}
           />
         ) : (
           <ExerciseTabs
