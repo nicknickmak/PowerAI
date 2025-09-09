@@ -1,5 +1,3 @@
-// API service for backend communication
-
 const BACKEND_URL = "http://localhost:8000";
 
 export async function fetchExercises() {
@@ -45,6 +43,21 @@ export async function submitWorkout(normalized: any) {
     return await res.json();
   } catch (error) {
     console.error("Failed to submit workout:", error);
+    throw error;
+  }
+}
+
+export async function fetchRecentByMuscle() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/workouts/recent-by-muscle`, {
+      method: "GET",
+    });
+    if (!res.ok) {
+      throw new Error(`Error: ${res.status} ${res.statusText}`);
+    }
+    return await res.json();
+  } catch (error) {
+    console.error("Failed to fetch recent workouts by muscle:", error);
     throw error;
   }
 }

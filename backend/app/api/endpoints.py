@@ -101,3 +101,34 @@ def submit_endpoint(request: SubmitRequest):
         return SubmitResponse(success=True, detail="Workout submitted successfully.")
     except Exception as e:
         return SubmitResponse(success=False, detail=str(e))
+
+@router.get("/workouts/recent-by-muscle")
+def get_recent_workout_by_muscle():
+    db = SessionLocal()
+    # Get all muscle groups
+    muscle_groups = db.query(Exercise.primary_muscle).distinct().all()
+    muscle_groups = [mg[0] for mg in muscle_groups if mg[0]]
+    result = {}
+    for muscle in muscle_groups:
+        # Find most recent workout session for this muscle group
+        recent_set = (
+            db.query(Set)
+            .join(Exercise, Set.exercise_id == Exercise.id)
+            .filter(Exercise.primary_muscle == muscle)
+            .order_by(desc(Set.timestamp))
+            .first()
+        )
+        if recent_set:
+            exercise = db.query(Exercise).filter(Exercise.id == recent_set.exercise_id).first()
+            result[muscle] = {
+                "exercise": exercise.name if exercise else None,
+                "equipment": exercise.equipment if exercise else None,
+                "primaryMuscle": muscle,
+                "secondaryMuscle": exercise.secondary_muscle if exercise else None,
+                "lastDate": recent_set.timestamp.date().isoformat() if recent_set.timestamp else None,
+                "sets": [{"weight": recent_set.weight, "reps": recent_set.reps}]
+            }
+        else:
+            result[muscle] = None
+    db.close()
+    return {"recent_by_muscle": result}
