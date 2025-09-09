@@ -3,42 +3,40 @@ import React from "react";
 interface WorkoutInputProps {
   input: string;
   setInput: (val: string) => void;
-  handleParse: () => void;
-  handleSubmit: () => void;
-  handleSendWorkout: () => void;
   loading: boolean;
-  parsed: any[];
   error: string;
-  stats: any;
-  backendResult: any;
+  queryResult: any;
+  handleQuery: (input: string) => Promise<any>;
+  handleConfirm: (normalized: any) => Promise<any>;
+  handleCancel?: () => void;
 }
 
 export const WorkoutInput: React.FC<WorkoutInputProps> = ({
   input,
   setInput,
-  handleParse,
-  handleSubmit,
-  handleSendWorkout,
   loading,
-  parsed,
   error,
-  stats,
-  backendResult,
+  queryResult,
+  handleQuery,
+  handleConfirm,
+  handleCancel,
 }) => {
   const [showError, setShowError] = React.useState(true);
   const [showSuccess, setShowSuccess] = React.useState(false);
+  const [showConfirmation, setShowConfirmation] = React.useState(false);
+  const [localLoading, setLocalLoading] = React.useState(false);
 
   React.useEffect(() => {
     setShowError(!!error);
   }, [error]);
 
   React.useEffect(() => {
-    if (backendResult && !error) {
-      setShowSuccess(true);
+    if (queryResult && !error) {
+      setShowConfirmation(true);
     } else {
-      setShowSuccess(false);
+      setShowConfirmation(false);
     }
-  }, [backendResult, error]);
+  }, [queryResult, error]);
 
   return (
     <div
@@ -124,7 +122,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
         <div
           style={{
             position: "absolute",
-            top: error && showError ? 56 : 12,
+            top: error && showError ? 60 : 12,
             left: "50%",
             transform: "translateX(-50%)",
             background: "#1a2a1a",
@@ -259,7 +257,12 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
         }}
       >
         <button
-          onClick={handleParse}
+          onClick={async () => {
+            setLocalLoading(true);
+            await handleQuery(input);
+            setLocalLoading(false);
+          }}
+          disabled={localLoading || loading}
           style={{
             background: "#00df00",
             color: "#222",
@@ -267,42 +270,11 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
             borderRadius: 6,
             padding: "8px 16px",
             fontWeight: "bold",
-            cursor: "pointer",
+            cursor: localLoading || loading ? "not-allowed" : "pointer",
+            opacity: localLoading || loading ? 0.6 : 1,
           }}
         >
-          Parse Workout
-        </button>
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{
-            background: "#444",
-            color: "#e7e7e7",
-            border: "none",
-            borderRadius: 6,
-            padding: "8px 16px",
-            fontWeight: "bold",
-            cursor: loading ? "not-allowed" : "pointer",
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          Get Weekly Stats
-        </button>
-        <button
-          onClick={handleSendWorkout}
-          disabled={loading || parsed.length === 0}
-          style={{
-            background: "#ff3333",
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            padding: "8px 16px",
-            fontWeight: "bold",
-            cursor: loading || parsed.length === 0 ? "not-allowed" : "pointer",
-            opacity: loading || parsed.length === 0 ? 0.6 : 1,
-          }}
-        >
-          Send Workout to Backend
+          Parse Workout (AI)
         </button>
       </div>
       {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
@@ -346,59 +318,222 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
           </pre>
         </details>
       )}
-      <div style={{ marginTop: 20 }}>
-        <h2
+      {/* Confirmation UI for normalized workout from /query */}
+      {showConfirmation && queryResult && (
+        <div
           style={{
-            borderBottom: "1px solid #333",
-            paddingBottom: 4,
-            marginBottom: 8,
+            marginTop: 24,
+            background: "#222",
+            borderRadius: 12,
+            boxShadow: "0 2px 8px rgba(0,223,0,0.08)",
+            padding: 24,
+            maxWidth: 520,
+            marginLeft: "auto",
+            marginRight: "auto",
           }}
         >
-          Parsed Workout
-        </h2>
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {parsed.map((ex, i) => (
-            <li
-              key={i}
+          <h2 style={{ color: "#00df00", marginBottom: 12 }}>
+            AI Normalized Workout
+          </h2>
+          {/* Organized grid display for normalized workout summary */}
+          {Array.isArray(queryResult) ? (
+            <div
               style={{
-                marginBottom: 12,
-                background: "#222",
-                borderRadius: 8,
-                padding: 10,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 20,
+                marginBottom: 18,
               }}
             >
-              <strong style={{ color: "#00df00", fontSize: 16 }}>
-                {ex.name}
-              </strong>
-              <ul
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 8,
-                  marginTop: 4,
-                  paddingLeft: 0,
-                  listStyle: "none",
-                }}
-              >
-                {ex.sets.map((set: any, j: number) => (
-                  <li
-                    key={j}
+              {queryResult.map((ex: any, i: number) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "#181818",
+                    borderRadius: 12,
+                    boxShadow: "0 2px 8px rgba(0,223,0,0.10)",
+                    padding: 20,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
                     style={{
-                      background: "#333",
-                      borderRadius: 6,
-                      padding: "4px 10px",
-                      color: "#e7e7e7",
-                      fontSize: 14,
+                      fontWeight: 700,
+                      fontSize: 18,
+                      color: "#00df00",
+                      marginBottom: 8,
                     }}
                   >
-                    {set.weight ? `${set.weight}x${set.reps}` : set.note}
-                  </li>
-                ))}
+                    {ex.name || ex.exercise || `Exercise ${i + 1}`}
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
+                      <span style={{ color: "#888" }}>Sets:</span>{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {ex.sets_count ?? ex.sets ?? "-"}
+                      </span>
+                    </div>
+                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
+                      <span style={{ color: "#888" }}>Reps:</span>{" "}
+                      <span style={{ fontWeight: 600 }}>{ex.reps ?? "-"}</span>
+                    </div>
+                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
+                      <span style={{ color: "#888" }}>Max Weight:</span>{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {ex.max_weight ?? ex.maxWeight ?? "-"}
+                      </span>
+                    </div>
+                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
+                      <span style={{ color: "#888" }}>Total Volume:</span>{" "}
+                      <span style={{ fontWeight: 600 }}>
+                        {ex.total_volume ?? ex.totalVolume ?? "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : typeof queryResult === "string" ? (
+            <div
+              style={{
+                background: "#181818",
+                color: "#e7e7e7",
+                borderRadius: 10,
+                padding: 18,
+                fontSize: 16,
+                marginBottom: 18,
+                textAlign: "center",
+                fontWeight: "bold",
+                letterSpacing: 0.5,
+              }}
+            ></div>
+          ) : (
+            <div
+              style={{
+                background: "#181818",
+                color: "#e7e7e7",
+                borderRadius: 10,
+                padding: 18,
+                marginBottom: 18,
+                boxShadow: "0 2px 8px rgba(0,223,0,0.08)",
+                fontSize: 15,
+                maxWidth: 480,
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                {Object.entries(queryResult).map(([key, value], idx) => {
+                  let renderedValue;
+                  if (typeof value === "object") {
+                    renderedValue = JSON.stringify(value, null, 2);
+                  } else if (typeof value === "string") {
+                    renderedValue = value
+                      .split("|")
+                      .map((part: string, i: number) => (
+                        <div
+                          key={i}
+                          style={{
+                            marginBottom: 6,
+                            textAlign: "left",
+                            paddingLeft: 0,
+                          }}
+                        >
+                          {part.trim()}
+                        </div>
+                      ));
+                  } else {
+                    renderedValue = String(value);
+                  }
+                  return (
+                    <li
+                      key={idx}
+                      style={{
+                        marginBottom: 12,
+                        paddingBottom: 8,
+                        borderBottom: "1px solid #333",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#00df00",
+                          fontWeight: "bold",
+                          minWidth: 110,
+                          fontSize: 16,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {key}:
+                      </span>
+                      <span
+                        style={{
+                          color: "#e7e7e7",
+                          fontSize: 15,
+                          wordBreak: "break-word",
+                          flex: 1,
+                        }}
+                      >
+                        {renderedValue}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
-            </li>
-          ))}
-        </ul>
-      </div>
+            </div>
+          )}
+          <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+            <button
+              onClick={async () => {
+                setLocalLoading(true);
+                const exercises = Array.isArray(queryResult)
+                  ? queryResult
+                  : queryResult.result;
+                const result = await handleConfirm(exercises);
+                setLocalLoading(false);
+                setShowConfirmation(false);
+                setShowSuccess(true);
+              }}
+              style={{
+                background: "#00df00",
+                color: "#222",
+                border: "none",
+                borderRadius: 6,
+                padding: "8px 20px",
+                fontWeight: "bold",
+                fontSize: 16,
+                cursor: localLoading ? "not-allowed" : "pointer",
+                opacity: localLoading ? 0.6 : 1,
+              }}
+              disabled={localLoading}
+            >
+              Confirm & Submit
+            </button>
+            <button
+              onClick={() => {
+                setShowConfirmation(false);
+                if (handleCancel) handleCancel();
+              }}
+              style={{
+                background: "#444",
+                color: "#e7e7e7",
+                border: "none",
+                borderRadius: 6,
+                padding: "8px 20px",
+                fontWeight: "bold",
+                fontSize: 16,
+                cursor: "pointer",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
       <div style={{ marginTop: 32 }}>
         <h2
           style={{

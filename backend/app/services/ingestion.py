@@ -36,8 +36,8 @@ def ingest_workout(session_date, location, exercises):
             set_obj = Set(
                 exercise_id=exercise.id,
                 session_id=session.id,
-                reps=s.reps,
-                weight=s.weight,
+                reps=s["reps"],
+                weight=s["weight"],
                 rpe=getattr(s, "rpe", None),
                 timestamp=session_date
             )

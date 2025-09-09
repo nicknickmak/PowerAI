@@ -275,7 +275,7 @@ def process_query(query: list, session_date=None, location=None):
     """Ingest workout, process analytics, and return summary."""
     from app.services.ingestion import ingest_workout
     summaries = []
-    norm_exercises = []
+    processed_exercises = []
     for exercise in query:
         norm_result = hybrid_normalize_exercise(exercise.name)
         norm_name = norm_result.get("canonical_exercise")
@@ -286,15 +286,23 @@ def process_query(query: list, session_date=None, location=None):
         total_reps = sum(s.reps or 0 for s in exercise.sets if s.reps is not None)
         max_weight = max((s.weight or 0) for s in exercise.sets if s.weight is not None)
         total_volume = sum((s.weight or 0) * (s.reps or 0) for s in exercise.sets if s.weight is not None and s.reps is not None)
-        summaries.append(f"{norm_name}: {total_sets} sets, {total_reps} reps, {max_weight} max weight, {total_volume} total volume")
-        norm_exercises.append({
+        processed_exercises.append({
             "name": norm_name,
+            "date": session_date.isoformat() if session_date else None,
+            "location": location,
             "primary_muscle": primary_muscle,
             "secondary_muscle": secondary_muscle,
             "equipment": equipment,
+            "total_sets": total_sets,
+            "total_reps": total_reps,
+            "max_weight": max_weight,
+            "total_volume": total_volume,
             "sets": exercise.sets
         })
-    if session_date and location:
-        ingest_workout(session_date, location, norm_exercises)
-    summary = " | ".join(summaries)
-    return summary
+    return processed_exercises
+
+def submit_workout(processed_exercises: list, session_date=None, location=None):
+    """Ingest workout, process analytics, and return summary."""
+    from app.services.ingestion import ingest_workout
+    ingest_workout(session_date, location, processed_exercises)
+        

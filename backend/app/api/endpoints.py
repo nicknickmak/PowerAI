@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List
-from app.services.ai import process_query
+from app.services.ai import process_query, submit_workout
 from datetime import datetime
 from app.db import SessionLocal
 from app.models import Exercise, Set, WorkoutSession
@@ -23,8 +23,18 @@ class WorkoutExercise(BaseModel):
 class QueryRequest(BaseModel):
     query: List[WorkoutExercise]
 
+class SubmitRequest(BaseModel):
+    exercises: list
+    session_date: str = None
+    location: str = None
+
+class SubmitResponse(BaseModel):
+    success: bool
+    detail: str = None
+
+from typing import Any
 class QueryResponse(BaseModel):
-    result: str
+    result: Any
 
 @router.get("/exercises/{id}/prs")
 def get_prs(id: int):
@@ -79,3 +89,15 @@ def query_endpoint(request: QueryRequest):
         return QueryResponse(result=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/submit", response_model=SubmitResponse)
+def submit_endpoint(request: SubmitRequest):
+    try:
+        # Parse session_date if provided
+        session_date = None
+        if request.session_date:
+            session_date = datetime.fromisoformat(request.session_date)
+        submit_workout(request.exercises, session_date=session_date, location=request.location)
+        return SubmitResponse(success=True, detail="Workout submitted successfully.")
+    except Exception as e:
+        return SubmitResponse(success=False, detail=str(e))

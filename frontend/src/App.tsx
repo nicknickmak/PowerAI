@@ -25,16 +25,23 @@ function parseWorkoutInput(input: string) {
   const result: { name: string; sets: any[] }[] = [];
   let currentExercise: { name: string; sets: any[] } | null = null;
   lines.forEach((line) => {
-    if (/^[A-Z ]+$/.test(line)) {
+    if (/^[A-Za-z ]+$/.test(line)) {
       if (currentExercise) result.push(currentExercise);
       currentExercise = { name: line, sets: [] };
-    } else if (/^\d+[xX]\d+/.test(line)) {
-      const [weight, reps] = line.split(/[xX]/);
-      currentExercise?.sets.push({
-        weight: Number(weight),
-        reps: Number(reps),
-        note: line.includes("dropset") ? "dropset" : "",
-      });
+    } else if (/^\d+[xX]\s*\d+/.test(line)) {
+      // Handles '225x5', '225x 5', '225X5', '225X 5'
+      const match = line.match(/^(\d+)[xX]\s*(\d+)/);
+      if (match) {
+        const weight = match[1];
+        const reps = match[2];
+        currentExercise?.sets.push({
+          weight: Number(weight),
+          reps: Number(reps),
+          note: line.includes("dropset") ? "dropset" : "",
+        });
+      } else if (currentExercise) {
+        currentExercise.sets.push({ note: line });
+      }
     } else if (currentExercise) {
       currentExercise.sets.push({ note: line });
     }
@@ -45,10 +52,11 @@ function parseWorkoutInput(input: string) {
 
 function App() {
   const [input, setInput] = useState("");
-  const [parsed, setParsed] = useState<any[]>([]);
+  // const [parsed, setParsed] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState("");
+  const [queryResult, setQueryResult] = useState<any>(null);
   const [backendResult, setBackendResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"workout" | "exercises">(
     "workout"
@@ -77,8 +85,49 @@ function App() {
     }
   }, [activeTab]);
 
-  const handleParse = () => {
-    setParsed(parseWorkoutInput(input));
+  // New API flow: handleQuery calls /query and sets normalized result
+  const handleQuery = async (inputText: string) => {
+    setLoading(true);
+    setError("");
+    setQueryResult(null);
+    try {
+      // Parse input before sending to /query
+      const parsedWorkout = parseWorkoutInput(inputText);
+      const res = await fetch(`${BACKEND_URL}/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: parsedWorkout }),
+      });
+      const data = await res.json();
+      setQueryResult(data.normalized || data);
+    } catch (e) {
+      setError("Failed to get normalized workout from backend.");
+    }
+    setLoading(false);
+  };
+
+  // Confirm/submit normalized workout
+  const handleConfirm = async (normalized: any) => {
+    setLoading(true);
+    setError("");
+    setBackendResult(null);
+    try {
+      const res = await fetch(`${BACKEND_URL}/submit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ exercises: normalized }),
+      });
+      const data = await res.json();
+      setBackendResult(data);
+    } catch (e) {
+      setError("Failed to submit workout to backend.");
+    }
+    setLoading(false);
+  };
+
+  // Cancel confirmation
+  const handleCancel = () => {
+    setQueryResult(null);
     setError("");
   };
 
@@ -97,17 +146,7 @@ function App() {
     setLoading(false);
   };
 
-  const handleSendWorkout = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const result = await sendWorkoutToBackend(parsed);
-      setBackendResult(result);
-    } catch (e) {
-      setError("Failed to send workout to backend.");
-    }
-    setLoading(false);
-  };
+  // Removed handleSendWorkout and parsed (no longer used)
 
   return (
     <div className="App">
@@ -116,9 +155,6 @@ function App() {
         style={{
           background: "#222",
           borderRadius: 16,
-          margin: "32px auto",
-          maxWidth: 700,
-          boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
           padding: 24,
         }}
       >
@@ -187,14 +223,12 @@ function App() {
           <WorkoutInput
             input={input}
             setInput={setInput}
-            handleParse={handleParse}
-            handleSubmit={handleSubmit}
-            handleSendWorkout={handleSendWorkout}
             loading={loading}
-            parsed={parsed}
             error={error}
-            stats={stats}
-            backendResult={backendResult}
+            queryResult={queryResult}
+            handleQuery={handleQuery}
+            handleConfirm={handleConfirm}
+            handleCancel={handleCancel}
           />
         ) : (
           <ExerciseTabs
