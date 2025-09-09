@@ -6,16 +6,6 @@ import { ExerciseTabs } from "./components/ExerciseTabs";
 const BACKEND_URL = "http://localhost:8000"; // Update if needed
 const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
-async function sendWorkoutToBackend(workout: any[]) {
-  // Example endpoint: POST /query (see backend)
-  const res = await fetch(`${BACKEND_URL}/query`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: workout }),
-  });
-  return res.json();
-}
-
 function parseWorkoutInput(input: string) {
   // Simple parser: returns array of exercises with sets
   const lines = input
@@ -52,12 +42,9 @@ function parseWorkoutInput(input: string) {
 
 function App() {
   const [input, setInput] = useState("");
-  // const [parsed, setParsed] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState("");
   const [queryResult, setQueryResult] = useState<any>(null);
-  const [backendResult, setBackendResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"workout" | "exercises">(
     "workout"
   );
@@ -110,7 +97,6 @@ function App() {
   const handleConfirm = async (normalized: any) => {
     setLoading(true);
     setError("");
-    setBackendResult(null);
     try {
       const res = await fetch(`${BACKEND_URL}/submit`, {
         method: "POST",
@@ -118,7 +104,6 @@ function App() {
         body: JSON.stringify({ exercises: normalized }),
       });
       const data = await res.json();
-      setBackendResult(data);
     } catch (e) {
       setError("Failed to submit workout to backend.");
     }
@@ -130,23 +115,6 @@ function App() {
     setQueryResult(null);
     setError("");
   };
-
-  const handleSubmit = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${BACKEND_URL}/summary/weekly`, {
-        method: "GET",
-      });
-      const statsData = await res.json();
-      setStats(statsData.summary || {});
-    } catch (e) {
-      setError("Failed to connect to backend.");
-    }
-    setLoading(false);
-  };
-
-  // Removed handleSendWorkout and parsed (no longer used)
 
   return (
     <div className="App">
