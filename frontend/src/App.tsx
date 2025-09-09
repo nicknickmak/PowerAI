@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import "./App.css";
 import { WorkoutInput } from "./components/WorkoutInput";
 import { ExerciseTabs } from "./components/ExerciseTabs";
+import { fetchExercises as apiFetchExercises, queryWorkout, submitWorkout } from "./services/apiService";
 
-const BACKEND_URL = "http://localhost:8000"; // Update if needed
 const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
 function parseWorkoutInput(input: string) {
@@ -55,10 +55,7 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/exercises`, {
-        method: "GET",
-      });
-      const data = await res.json();
+      const data = await apiFetchExercises();
       setExercises(data.exercises || []);
     } catch (e) {
       setError("Failed to fetch exercises from backend.");
@@ -80,12 +77,7 @@ function App() {
     try {
       // Parse input before sending to /query
       const parsedWorkout = parseWorkoutInput(inputText);
-      const res = await fetch(`${BACKEND_URL}/query`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: parsedWorkout }),
-      });
-      const data = await res.json();
+      const data = await queryWorkout(parsedWorkout);
       setQueryResult(data.normalized || data);
     } catch (e) {
       setError("Failed to get normalized workout from backend.");
@@ -98,12 +90,7 @@ function App() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BACKEND_URL}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ exercises: normalized }),
-      });
-      const data = await res.json();
+      await submitWorkout(normalized);
     } catch (e) {
       setError("Failed to submit workout to backend.");
     }

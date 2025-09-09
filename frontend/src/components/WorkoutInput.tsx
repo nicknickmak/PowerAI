@@ -493,7 +493,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
                 const exercises = Array.isArray(queryResult)
                   ? queryResult
                   : queryResult.result;
-                const result = await handleConfirm(exercises);
+                await handleConfirm(exercises);
                 setLocalLoading(false);
                 setShowConfirmation(false);
                 setShowSuccess(true);
