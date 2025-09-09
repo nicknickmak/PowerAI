@@ -93,11 +93,7 @@ def query_endpoint(request: QueryRequest):
 @router.post("/submit", response_model=SubmitResponse)
 def submit_endpoint(request: SubmitRequest):
     try:
-        # Parse session_date if provided
-        session_date = None
-        if request.session_date:
-            session_date = datetime.fromisoformat(request.session_date)
-        submit_workout(request.exercises, session_date=session_date, location=request.location)
+        submit_workout(request.exercises)
         return SubmitResponse(success=True, detail="Workout submitted successfully.")
     except Exception as e:
         return SubmitResponse(success=False, detail=str(e))
@@ -114,8 +110,9 @@ def get_recent_workout_by_muscle():
         recent_set = (
             db.query(Set)
             .join(Exercise, Set.exercise_id == Exercise.id)
+            .join(WorkoutSession, Set.session_id == WorkoutSession.id)
             .filter(Exercise.primary_muscle == muscle)
-            .order_by(desc(Set.timestamp))
+            .order_by(WorkoutSession.date.asc())
             .first()
         )
         if recent_set:
@@ -125,7 +122,7 @@ def get_recent_workout_by_muscle():
                 "equipment": exercise.equipment if exercise else None,
                 "primaryMuscle": muscle,
                 "secondaryMuscle": exercise.secondary_muscle if exercise else None,
-                "lastDate": recent_set.timestamp.date().isoformat() if recent_set.timestamp else None,
+                "lastDate": recent_set.session.date.isoformat() if recent_set.session and recent_set.session.date else None,
                 "sets": [{"weight": recent_set.weight, "reps": recent_set.reps}]
             }
         else:

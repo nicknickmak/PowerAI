@@ -301,8 +301,7 @@ def process_query(query: list, session_date=None, location=None):
         })
     return processed_exercises
 
-def submit_workout(processed_exercises: list, session_date=None, location=None):
+def submit_workout(processed_exercises: list):
     """Ingest workout, process analytics, and return summary."""
     from app.services.ingestion import ingest_workout
-    ingest_workout(session_date, location, processed_exercises)
-        
+    ingest_workout(processed_exercises)

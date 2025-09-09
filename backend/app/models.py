@@ -27,7 +27,6 @@ class Set(Base):
     reps = Column(Integer)
     weight = Column(Float)
     rpe = Column(Float)
-    timestamp = Column(DateTime)
     exercise = relationship("Exercise", back_populates="sets")
     session = relationship("WorkoutSession", back_populates="sets")
 
