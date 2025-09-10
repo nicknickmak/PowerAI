@@ -45,6 +45,8 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
       .map((set) => ({ ...set, date: session.date }))
   );
 
+  const formattedName = formatExerciseName(exerciseName);
+
   const lineData = [
     ["Date", "Weight", "Reps"],
     ...allSets.map((set) => [set.date, set.weight, set.reps]),
@@ -84,7 +86,7 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
         }}
       >
         <ExerciseHeader
-          name={exerciseName}
+          name={formattedName}
           lastDate={allSets.length > 0 ? allSets[allSets.length - 1].date : ""}
         />
         <ChartSwitcher
@@ -165,7 +167,7 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
               },
               title: {
                 display: true,
-                text: exerciseName + " Progress",
+                text: formattedName + " Progress",
               },
             },
             scales: {
@@ -242,5 +244,14 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
     </div>
   );
 };
+
+// Helper function to format exercise names
+function formatExerciseName(name: string): string {
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
 
 export default ExerciseCard;

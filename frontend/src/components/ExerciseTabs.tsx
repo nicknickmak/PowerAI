@@ -167,7 +167,7 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
             <ExerciseCard
               key={name}
               sessions={exerciseToSessions[name]}
-              exerciseName={formatExerciseName(name)}
+              exerciseName={name}
             />
           ))
         )}
@@ -175,11 +175,3 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
     </div>
   );
 };
-
-// Helper function to format exercise names
-function formatExerciseName(name: string): string {
-  return name
-    .split(" ")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(" ");
-}
