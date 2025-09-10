@@ -27,6 +27,12 @@ ChartJS.register(
   Legend
 );
 
+// Chart color variables (shared for both line and bar)
+const COLOR_WEIGHT = "#00df00";
+const COLOR_WEIGHT_BG = "rgba(0,223,0,0.2)";
+const COLOR_REPS = "#33adffff";
+const COLOR_REPS_BG = "rgba(255,51,51,0.2)";
+
 const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
   sessions,
   exerciseName,
@@ -118,14 +124,14 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
                 {
                   label: "Weight",
                   data: weights,
-                  borderColor: "#00df00",
-                  backgroundColor: "rgba(0,223,0,0.2)",
+                  borderColor: COLOR_WEIGHT,
+                  backgroundColor: COLOR_WEIGHT_BG,
                 },
                 {
                   label: "Reps",
                   data: reps,
-                  borderColor: "#ff3333",
-                  backgroundColor: "rgba(255,51,51,0.2)",
+                  borderColor: COLOR_REPS,
+                  backgroundColor: COLOR_REPS_BG,
                 },
               ],
             };
@@ -141,12 +147,12 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
                 {
                   label: "Weight",
                   data: weights,
-                  backgroundColor: "#00bfff",
+                  backgroundColor: COLOR_WEIGHT,
                 },
                 {
                   label: "Reps",
                   data: reps,
-                  backgroundColor: "#ff3333",
+                  backgroundColor: COLOR_REPS,
                 },
               ],
             };
