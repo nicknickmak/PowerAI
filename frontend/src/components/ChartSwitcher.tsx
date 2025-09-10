@@ -14,6 +14,20 @@ const ChartSwitcher: React.FC<{
   >
     <button
       style={{
+        background: activeChart === "bar" ? "#00df00" : "#444",
+        color: "#222",
+        border: "none",
+        borderRadius: 4,
+        padding: "2px 8px",
+        cursor: "pointer",
+        fontWeight: activeChart === "bar" ? "bold" : "normal",
+      }}
+      onClick={() => setActiveChart("bar")}
+    >
+      Bar
+    </button>
+    <button
+      style={{
         background: activeChart === "line" ? "#00df00" : "#444",
         color: "#222",
         border: "none",
@@ -25,20 +39,6 @@ const ChartSwitcher: React.FC<{
       onClick={() => setActiveChart("line")}
     >
       Line
-    </button>
-    <button
-      style={{
-        background: activeChart === "bar" ? "#ff3333" : "#444",
-        color: "#222",
-        border: "none",
-        borderRadius: 4,
-        padding: "2px 8px",
-        cursor: "pointer",
-        fontWeight: activeChart === "bar" ? "bold" : "normal",
-      }}
-      onClick={() => setActiveChart("bar")}
-    >
-      Bar
     </button>
   </div>
 );

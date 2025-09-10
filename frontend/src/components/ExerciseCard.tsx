@@ -37,7 +37,7 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
   sessions,
   exerciseName,
 }) => {
-  const [activeChart, setActiveChart] = React.useState<"line" | "bar">("line");
+  const [activeChart, setActiveChart] = React.useState<"line" | "bar">("bar");
   // Aggregate all sets for this exercise across sessions
   const allSets = sessions.flatMap((session) =>
     session.sets
