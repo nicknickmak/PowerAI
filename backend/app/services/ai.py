@@ -276,6 +276,14 @@ def process_query(query: list, session_date: str, location=None):
     """
     Process a user query containing exercises with sets, normalize exercises, and compute analytics.
     """
+    from datetime import date, datetime
+    if isinstance(session_date, str):
+        session_date_obj = datetime.strptime(session_date, "%Y-%m-%d").date()
+    else:
+        session_date_obj = session_date
+    if session_date_obj > date.today():
+        raise ValueError("Session date cannot be in the future.")
+    
     processed_exercises = []
     for exercise in query:
         norm_result = hybrid_normalize_exercise(exercise.name)
