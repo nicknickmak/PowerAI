@@ -204,6 +204,7 @@ function App() {
           />
         ) : (
           <ExerciseTabs
+            loading={loading}
             muscleGroups={MUSCLE_GROUPS}
             activeMuscle={activeMuscle}
             setActiveMuscle={setActiveMuscle}

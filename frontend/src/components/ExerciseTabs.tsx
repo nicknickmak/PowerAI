@@ -3,6 +3,7 @@ import { Chart } from "react-google-charts";
 import ExerciseHeader from "./ExerciseHeader";
 import ChartSwitcher from "./ChartSwitcher";
 import ExerciseChart from "./ExerciseChart";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface Exercise {
   name: string;
@@ -12,6 +13,7 @@ interface Exercise {
 }
 
 interface ExerciseTabsProps {
+  loading: boolean;
   muscleGroups: string[];
   activeMuscle: string;
   setActiveMuscle: (muscle: string) => void;
@@ -68,6 +70,7 @@ const ExerciseCard: React.FC<{ ex: Exercise }> = ({ ex }) => {
 };
 
 export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
+  loading,
   muscleGroups,
   activeMuscle,
   setActiveMuscle,
@@ -135,7 +138,9 @@ export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
         ))}
       </div>
       <div>
-        {filteredExercises.length === 0 ? (
+        {loading ? (
+          <LoadingSpinner message="Loading exercises..." />
+        ) : filteredExercises.length === 0 ? (
           <div
             style={{
               textAlign: "center",
