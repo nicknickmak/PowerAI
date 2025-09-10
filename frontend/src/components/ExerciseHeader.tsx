@@ -16,13 +16,11 @@ const ExerciseHeader: React.FC<{ name: string; lastDate: string }> = ({
     <span style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}>
       {(() => {
         const dateObj = new Date(lastDate);
-        const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
-        const dd = String(dateObj.getDate()).padStart(2, "0");
-        const yyyy = dateObj.getFullYear();
         const today = new Date();
-        const diffTime = Math.abs(today.getTime() - dateObj.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        return `${mm}/${dd}/${yyyy} (${diffDays} days ago)`;
+        const diffDays = Math.floor(
+          (today.getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return `Last: ${dateObj.toLocaleDateString()} (${diffDays}d ago)`;
       })()}
     </span>
   </div>
