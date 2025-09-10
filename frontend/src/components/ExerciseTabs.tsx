@@ -1,5 +1,4 @@
 import React from "react";
-import { Chart } from "react-google-charts";
 import ExerciseHeader from "./ExerciseHeader";
 import ChartSwitcher from "./ChartSwitcher";
 import { Line, Bar } from "react-chartjs-2";
@@ -26,7 +25,6 @@ ChartJS.register(
   Legend
 );
 
-//TODO: refactor to sessions
 interface Session {
   date: string;
   location: string;
@@ -88,25 +86,56 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
         borderRadius: 8,
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start",
-        width: 600,
-        minWidth: 600,
-        maxWidth: "100%",
+        alignItems: "stretch",
+        width: "100%",
+        minWidth: 0,
+        maxWidth: "clamp(320px, 100vw, 700px)",
       }}
     >
-      <ExerciseHeader
-        name={exerciseName}
-        lastDate={allSets.length > 0 ? allSets[allSets.length - 1].date : ""}
-      />
       <div
-        style={{ display: "flex", gap: 12, marginTop: 0, alignItems: "center" }}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          width: "100%",
+          marginBottom: 8,
+        }}
+      >
+        <ExerciseHeader
+          name={exerciseName}
+          lastDate={allSets.length > 0 ? allSets[allSets.length - 1].date : ""}
+        />
+        <ChartSwitcher
+          activeChart={activeChart}
+          setActiveChart={setActiveChart}
+        />
+      </div>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          marginTop: 0,
+          alignItems: "center",
+          width: "100%",
+        }}
       >
         {/* Inline chart rendering logic */}
         {(() => {
           // Convert Google Chart data format to Chart.js format
           let chartData;
+          // Helper to format date string to MM/DD
+          const formatDate = (dateStr: string) => {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return dateStr;
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            return `${mm}/${dd}`;
+          };
+
           if (activeChart === "line") {
-            const labels = lineData.slice(1).map((row) => row[0]);
+            const labels = lineData
+              .slice(1)
+              .map((row) => formatDate(String(row[0])));
             const weights = lineData.slice(1).map((row) => row[1]);
             const reps = lineData.slice(1).map((row) => row[2]);
             chartData = {
@@ -127,7 +156,9 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
               ],
             };
           } else {
-            const labels = barData.slice(1).map((row) => row[0]);
+            const labels = barData
+              .slice(1)
+              .map((row) => formatDate(String(row[0])));
             const weights = barData.slice(1).map((row) => row[1]);
             const reps = barData.slice(1).map((row) => row[3]);
             chartData = {
@@ -157,21 +188,76 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
                 text: exerciseName + " Progress",
               },
             },
+            scales: {
+              y: {
+                type: "linear" as const,
+                display: true,
+                position: "left" as const,
+                title: {
+                  display: true,
+                  text: "Weight",
+                },
+              },
+              y1: {
+                type: "linear" as const,
+                display: true,
+                position: "right" as const,
+                grid: {
+                  drawOnChartArea: false,
+                },
+                title: {
+                  display: true,
+                  text: "Reps",
+                },
+              },
+            },
           };
           return (
-            <div style={{ width: "100%", height: "400px" }}>
+            <div
+              style={{
+                flex: 1,
+                height: "min(40vw, 260px)",
+                minWidth: 0,
+              }}
+            >
               {activeChart === "line" ? (
-                <Line data={chartData} options={chartOptions} />
+                <Line
+                  data={{
+                    ...chartData,
+                    datasets: [
+                      {
+                        ...chartData.datasets[0],
+                        yAxisID: "y",
+                      },
+                      {
+                        ...chartData.datasets[1],
+                        yAxisID: "y1",
+                      },
+                    ],
+                  }}
+                  options={chartOptions}
+                />
               ) : (
-                <Bar data={chartData} options={chartOptions} />
+                <Bar
+                  data={{
+                    ...chartData,
+                    datasets: [
+                      {
+                        ...chartData.datasets[0],
+                        yAxisID: "y",
+                      },
+                      {
+                        ...chartData.datasets[1],
+                        yAxisID: "y1",
+                      },
+                    ],
+                  }}
+                  options={chartOptions}
+                />
               )}
             </div>
           );
         })()}
-        <ChartSwitcher
-          activeChart={activeChart}
-          setActiveChart={setActiveChart}
-        />
       </div>
     </div>
   );
@@ -245,9 +331,8 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
         background: "#181818",
         borderRadius: 16,
         boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-        padding: 32,
+        padding: "clamp(12px, 5vw, 32px)",
         maxWidth: 700,
-        margin: "32px auto",
         color: "#e7e7e7",
         fontFamily: "Inter, Arial, sans-serif",
       }}
