@@ -1,14 +1,14 @@
 const BACKEND_URL = "http://localhost:8000";
 
-export async function fetchExercises() {
+export async function fetchSessions() {
   try {
-    const res = await fetch(`${BACKEND_URL}/exercises`, { method: "GET" });
+    const res = await fetch(`${BACKEND_URL}/sessions`, { method: "GET" });
     if (!res.ok) {
       throw new Error(`Error: ${res.status} ${res.statusText}`);
     }
     return await res.json();
   } catch (error) {
-    console.error("Failed to fetch exercises:", error);
+    console.error("Failed to fetch sessions:", error);
     throw error;
   }
 }

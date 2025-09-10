@@ -5,31 +5,53 @@ import ChartSwitcher from "./ChartSwitcher";
 import ExerciseChart from "./ExerciseChart";
 import LoadingSpinner from "./LoadingSpinner";
 
-interface Exercise {
-  name: string;
-  muscle: string;
-  lastDate: string;
-  sets: { weight: number; reps: number }[];
+//TODO: refactor to sessions
+interface Session {
+  date: string;
+  location: string;
+  sets: Set[];
 }
 
-interface ExerciseTabsProps {
+interface Set {
+  exercise: string;
+  equipment: string;
+  primaryMuscle: string;
+  secondaryMuscle?: string;
+  weight: number;
+  reps: number;
+  rpe: number;
+  note?: string;
+  timestamp?: string; // TODO: remove this from API
+}
+
+interface SessionsTabsProps {
   loading: boolean;
   muscleGroups: string[];
   activeMuscle: string;
   setActiveMuscle: (muscle: string) => void;
-  exercises: Exercise[];
+  sessions: Session[];
 }
 
-const ExerciseCard: React.FC<{ ex: Exercise }> = ({ ex }) => {
+const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
+  sessions,
+  exerciseName,
+}) => {
   const [activeChart, setActiveChart] = React.useState<"line" | "bar">("line");
+  // Aggregate all sets for this exercise across sessions
+  const allSets = sessions.flatMap((session) =>
+    session.sets
+      .filter((set) => set.exercise === exerciseName)
+      .map((set) => ({ ...set, date: session.date }))
+  );
+
   const lineData = [
     ["Date", "Weight", "Reps"],
-    ...ex.sets.map((set, idx) => [ex.lastDate, set.weight, set.reps]),
+    ...allSets.map((set) => [set.date, set.weight, set.reps]),
   ];
   const barData = [
     ["Date", "Weight", { role: "annotation" }, "Reps", { role: "annotation" }],
-    ...ex.sets.map((set, idx) => [
-      ex.lastDate,
+    ...allSets.map((set) => [
+      set.date,
       set.weight,
       String(set.weight),
       set.reps,
@@ -51,7 +73,10 @@ const ExerciseCard: React.FC<{ ex: Exercise }> = ({ ex }) => {
         maxWidth: "100%",
       }}
     >
-      <ExerciseHeader name={ex.name} lastDate={ex.lastDate} />
+      <ExerciseHeader
+        name={exerciseName}
+        lastDate={allSets.length > 0 ? allSets[allSets.length - 1].date : ""}
+      />
       <div
         style={{ display: "flex", gap: 12, marginTop: 0, alignItems: "center" }}
       >
@@ -69,16 +94,67 @@ const ExerciseCard: React.FC<{ ex: Exercise }> = ({ ex }) => {
   );
 };
 
-export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
+export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
   loading,
   muscleGroups,
   activeMuscle,
   setActiveMuscle,
-  exercises,
+  sessions,
 }) => {
-  const filteredExercises = exercises
-    .filter((ex) => ex.muscle === activeMuscle)
-    .sort((a, b) => (a.lastDate < b.lastDate ? 1 : -1));
+  // Map specific muscles to major groups
+  const muscleGroupMap: Record<string, string> = {
+    chest: "Chest",
+    pecs: "Chest",
+    back: "Back",
+    lats: "Back",
+    traps: "Back",
+    quads: "Legs",
+    hamstrings: "Legs",
+    calves: "Legs",
+    glutes: "Legs",
+    shoulders: "Shoulders",
+    delts: "Shoulders",
+    biceps: "Arms",
+    triceps: "Arms",
+    forearms: "Arms",
+    abs: "Core",
+    core: "Core",
+    obliques: "Core",
+    // Add more as needed
+  };
+
+  // We want to go through each session
+  // then go through each set in the session and
+  // group them by exercise name,
+  // then filter by activeMuscle
+  //
+
+  // Group sets by exercise name for the selected muscle group
+  const exerciseToSessions: Record<string, Session[]> = {};
+  sessions.forEach((session) => {
+    session.sets.forEach((set) => {
+      const primaryKey = set.primaryMuscle
+        ? set.primaryMuscle.toLowerCase()
+        : "";
+      const secondaryKey = set.secondaryMuscle
+        ? set.secondaryMuscle.toLowerCase()
+        : "";
+      if (
+        muscleGroupMap[primaryKey] === activeMuscle ||
+        muscleGroupMap[secondaryKey] === activeMuscle
+      ) {
+        if (!exerciseToSessions[set.exercise]) {
+          exerciseToSessions[set.exercise] = [];
+        }
+        // Push session if not already present for this exercise
+        if (!exerciseToSessions[set.exercise].includes(session)) {
+          exerciseToSessions[set.exercise].push(session);
+        }
+      }
+    });
+  });
+
+  const exerciseNames = Object.keys(exerciseToSessions);
 
   return (
     <div
@@ -109,6 +185,7 @@ export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
         style={{
           marginBottom: 18,
           display: "flex",
+          flexWrap: "wrap",
           justifyContent: "center",
           gap: 12,
         }}
@@ -139,8 +216,8 @@ export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
       </div>
       <div>
         {loading ? (
-          <LoadingSpinner message="Loading exercises..." />
-        ) : filteredExercises.length === 0 ? (
+          <LoadingSpinner message="Loading sessions..." />
+        ) : exerciseNames.length === 0 ? (
           <div
             style={{
               textAlign: "center",
@@ -153,7 +230,13 @@ export const ExerciseTabs: React.FC<ExerciseTabsProps> = ({
             No exercises for this muscle group yet.
           </div>
         ) : (
-          filteredExercises.map((ex, i) => <ExerciseCard key={i} ex={ex} />)
+          exerciseNames.map((name) => (
+            <ExerciseCard
+              key={name}
+              sessions={exerciseToSessions[name]}
+              exerciseName={name}
+            />
+          ))
         )}
       </div>
     </div>

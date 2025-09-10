@@ -3,7 +3,7 @@ import "./App.css";
 import { WorkoutInput } from "./components/WorkoutInput";
 import { ExerciseTabs } from "./components/ExerciseTabs";
 import {
-  fetchExercises as apiFetchExercises,
+  fetchSessions as apiFetchSessions,
   queryWorkout,
   submitWorkout,
 } from "./services/apiService";
@@ -49,22 +49,20 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [queryResult, setQueryResult] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<"workout" | "exercises">(
-    "workout"
-  );
+  const [activeTab, setActiveTab] = useState<"workout" | "sessions">("workout");
   const [activeMuscle, setActiveMuscle] = useState<string>(MUSCLE_GROUPS[0]);
-  const [exercises, setExercises] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<any[]>([]);
   const [muscleGroupRefresh, setMuscleGroupRefresh] = useState(Date.now());
 
-  const fetchExercises = async () => {
+  const fetchSessions = async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await apiFetchExercises();
-      setExercises(data.exercises || []);
+      const data = await apiFetchSessions();
+      setSessions(data.sessions || []);
     } catch (e) {
       setError(
-        "Failed to fetch exercises from backend: " +
+        "Failed to fetch sessions from backend: " +
           (e instanceof Error ? e.message : String(e))
       );
     }
@@ -72,8 +70,8 @@ function App() {
   };
 
   React.useEffect(() => {
-    if (activeTab === "exercises") {
-      fetchExercises();
+    if (activeTab === "sessions" && !sessions.length) {
+      fetchSessions();
     }
   }, [activeTab]);
 
@@ -170,17 +168,17 @@ function App() {
             Workout
           </button>
           <button
-            onClick={() => setActiveTab("exercises")}
+            onClick={() => setActiveTab("sessions")}
             style={{
-              fontWeight: activeTab === "exercises" ? "bold" : "normal",
-              background: activeTab === "exercises" ? "#00df00" : "#333",
-              color: activeTab === "exercises" ? "#222" : "#e7e7e7",
+              fontWeight: activeTab === "sessions" ? "bold" : "normal",
+              background: activeTab === "sessions" ? "#00df00" : "#333",
+              color: activeTab === "sessions" ? "#222" : "#e7e7e7",
               border: "none",
               borderRadius: 8,
               padding: "10px 32px",
               fontSize: 18,
               boxShadow:
-                activeTab === "exercises"
+                activeTab === "sessions"
                   ? "0 2px 8px rgba(0,223,0,0.08)"
                   : "none",
               transition: "all 0.2s",
@@ -208,7 +206,7 @@ function App() {
             muscleGroups={MUSCLE_GROUPS}
             activeMuscle={activeMuscle}
             setActiveMuscle={setActiveMuscle}
-            exercises={exercises}
+            sessions={sessions}
           />
         )}
       </header>

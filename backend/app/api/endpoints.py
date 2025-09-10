@@ -51,33 +51,35 @@ def get_weekly_summary():
     # TODO: Implement weekly summary
     return {"summary": {}}
 
-@router.get("/exercises")
-def get_exercises():
+@router.get("/sessions")
+def get_sessions():
     db = SessionLocal()
-    exercises_out = []
-    exercises = db.query(Exercise).all()
+    sessions_out = []
+    sessions = db.query(WorkoutSession).order_by(desc(WorkoutSession.date)).all()
 
-    for ex in exercises:
-        # Find most recent set for this exercise
-        last_set = db.query(Set).filter(Set.exercise_id == ex.id).order_by(desc(Set.timestamp)).first()
-        if last_set:
-            last_date = last_set.timestamp.date().isoformat() if last_set.timestamp else None
-            # Get all sets for this exercise in the most recent session
-            sets = db.query(Set).filter(Set.exercise_id == ex.id, Set.timestamp == last_set.timestamp).all()
-            sets_out = [{"weight": s.weight, "reps": s.reps} for s in sets]
-        else:
-            last_date = None
-            sets_out = []
-        exercises_out.append({
-            "name": ex.name,
-            "equipment": ex.equipment,
-            "primaryMuscle": ex.primary_muscle,
-            "secondaryMuscle": ex.secondary_muscle,
-            "lastDate": last_date,
+    for session in sessions:
+        sets = db.query(Set).filter(Set.session_id == session.id).all()
+        sets_out = []
+        for s in sets:
+            exercise = db.query(Exercise).filter(Exercise.id == s.exercise_id).first()
+            sets_out.append({
+                "exercise": exercise.name if exercise else None,
+                "equipment": exercise.equipment if exercise else None,
+                "primaryMuscle": exercise.primary_muscle if exercise else None,
+                "secondaryMuscle": exercise.secondary_muscle if exercise else None,
+                "weight": s.weight,
+                "reps": s.reps,
+                "rpe": getattr(s, "rpe", None),
+                "timestamp": s.timestamp.isoformat() if getattr(s, "timestamp", None) else None
+            })
+        sessions_out.append({
+            "id": session.id,
+            "date": session.date.isoformat() if session.date else None,
+            "location": session.location,
             "sets": sets_out
         })
     db.close()
-    return {"exercises": exercises_out}
+    return {"sessions": sessions_out}
 
 @router.post("/query", response_model=QueryResponse)
 def query_endpoint(request: QueryRequest):
