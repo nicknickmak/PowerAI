@@ -272,10 +272,10 @@ def summarize_stats(stats):
     # TODO: Integrate with LLM
     return "Summary goes here."
 
-def process_query(query: list, session_date=None, location=None):
-    """Ingest workout, process analytics, and return summary."""
-    from app.services.ingestion import ingest_workout
-    summaries = []
+def process_query(query: list, session_date: str, location=None):
+    """
+    Process a user query containing exercises with sets, normalize exercises, and compute analytics.
+    """
     processed_exercises = []
     for exercise in query:
         norm_result = hybrid_normalize_exercise(exercise.name)
@@ -289,7 +289,7 @@ def process_query(query: list, session_date=None, location=None):
         total_volume = sum((s.weight or 0) * (s.reps or 0) for s in exercise.sets if s.weight is not None and s.reps is not None)
         processed_exercises.append({
             "name": norm_name,
-            "date": session_date.isoformat() if session_date else None,
+            "date": session_date,
             "location": location,
             "primary_muscle": primary_muscle,
             "secondary_muscle": secondary_muscle,

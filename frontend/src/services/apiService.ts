@@ -13,12 +13,12 @@ export async function fetchSessions() {
   }
 }
 
-export async function queryWorkout(parsedWorkout: any) {
+export async function queryWorkout(parsedWorkout: any, date: string) {
   try {
     const res = await fetch(`${BACKEND_URL}/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: parsedWorkout }),
+      body: JSON.stringify({ query: parsedWorkout, date: date }),
     });
     if (!res.ok) {
       throw new Error(`Error: ${res.status} ${res.statusText}`);

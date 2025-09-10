@@ -22,6 +22,7 @@ class WorkoutExercise(BaseModel):
 
 class QueryRequest(BaseModel):
     query: List[WorkoutExercise]
+    date: str
 
 class SubmitRequest(BaseModel):
     exercises: list
@@ -84,10 +85,8 @@ def get_sessions():
 @router.post("/query", response_model=QueryResponse)
 def query_endpoint(request: QueryRequest):
     try:
-        # Example: get date and location from request or use defaults
-        session_date = datetime.now()
         location = "Unknown"  # Replace with actual location if available in request
-        result = process_query(request.query, session_date=session_date, location=location)
+        result = process_query(request.query, request.date, location=location)
         return QueryResponse(result=result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -10,16 +10,37 @@ import {
 
 const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
-function parseWorkoutInput(input: string) {
+function parseWorkoutInput(
+  input: string
+): [{ name: string; sets: any[] }[], string] {
   // Simple parser: returns array of exercises with sets
   const lines = input
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+   .split(/\r?\n/)
+   .map((l) => l.trim())
+   .filter(Boolean);
   const result: { name: string; sets: any[] }[] = [];
+  let workoutDate = new Date().toISOString();
+
   let currentExercise: { name: string; sets: any[] } | null = null;
   lines.forEach((line) => {
-    if (/^[A-Za-z ]+$/.test(line)) {
+    // Date format: YYYY-MM-DD or MM/DD/YYYY or similar
+    if (
+      /^(\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\d{1,2}[\/-]\d{1,2})$/.test(
+        line
+      )
+    ) {
+      // Handles YYYY-MM-DD, MM/DD/YYYY, MM/DD, MM-DD
+      let dateStr = line;
+      if (/^\d{1,2}[\/-]\d{1,2}$/.test(line)) {
+        // If year is missing, use current year
+        const [month, day] = line.split(/[\/-]/).map(Number);
+        const year = new Date().getFullYear();
+        dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
+          day
+        ).padStart(2, "0")}`;
+      }
+      workoutDate = new Date(dateStr).toISOString().split("T")[0];
+    } else if (/^[A-Za-z ]+$/.test(line)) {
       if (currentExercise) result.push(currentExercise);
       currentExercise = { name: line, sets: [] };
     } else if (/^\d+[xX]\s*\d+/.test(line)) {
@@ -41,7 +62,7 @@ function parseWorkoutInput(input: string) {
     }
   });
   if (currentExercise) result.push(currentExercise);
-  return result;
+  return [result, workoutDate];
 }
 
 function App() {
@@ -82,8 +103,8 @@ function App() {
     setQueryResult(null);
     try {
       // Parse input before sending to /query
-      const parsedWorkout = parseWorkoutInput(inputText);
-      const data = await queryWorkout(parsedWorkout);
+      const [parsedWorkout, workoutDate] = parseWorkoutInput(inputText);
+      const data = await queryWorkout(parsedWorkout, workoutDate);
       setQueryResult(data.normalized || data);
     } catch (e) {
       setError(

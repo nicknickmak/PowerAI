@@ -133,7 +133,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={
-            "INCLINE CHEST PRESS\n140X20\n150X12\n150X10\n100X8 superset\n\nTRICEP PULLDOWN"
+            "12/28\n\nINCLINE CHEST PRESS\n140X20\n150X12\n150X10\n100X8 superset\n\nTRICEP PULLDOWN"
           }
           style={{
             width: "100%",
