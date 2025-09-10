@@ -6,6 +6,7 @@ import {
   fetchSessions as apiFetchSessions,
   queryWorkout,
   submitWorkout,
+  WorkoutQueryResult,
 } from "./services/apiService";
 
 const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
@@ -15,9 +16,9 @@ function parseWorkoutInput(
 ): [{ name: string; sets: any[] }[], string] {
   // Simple parser: returns array of exercises with sets
   const lines = input
-   .split(/\r?\n/)
-   .map((l) => l.trim())
-   .filter(Boolean);
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
   const result: { name: string; sets: any[] }[] = [];
   let workoutDate = new Date().toISOString();
 
@@ -69,7 +70,9 @@ function App() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [queryResult, setQueryResult] = useState<any>(null);
+  const [queryResult, setQueryResult] = useState<WorkoutQueryResult[] | null>(
+    null
+  );
   const [activeTab, setActiveTab] = useState<"workout" | "sessions">("workout");
   const [activeMuscle, setActiveMuscle] = useState<string>(MUSCLE_GROUPS[0]);
   const [sessions, setSessions] = useState<any[]>([]);
@@ -104,8 +107,11 @@ function App() {
     try {
       // Parse input before sending to /query
       const [parsedWorkout, workoutDate] = parseWorkoutInput(inputText);
-      const data = await queryWorkout(parsedWorkout, workoutDate);
-      setQueryResult(data.normalized || data);
+      const data: WorkoutQueryResult[] = await queryWorkout(
+        parsedWorkout,
+        workoutDate
+      );
+      setQueryResult(data);
     } catch (e) {
       setError(
         `Failed to get normalized workout from backend: ${

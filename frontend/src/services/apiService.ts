@@ -1,3 +1,23 @@
+// --- Interfaces for queryWorkout response ---
+export interface WorkoutSet {
+  weight: number;
+  reps: number;
+  note: string;
+}
+
+export interface WorkoutQueryResult {
+  name: string;
+  date: string;
+  location: string;
+  primary_muscle: string;
+  secondary_muscle: string | null;
+  equipment: string;
+  total_sets: number;
+  total_reps: number;
+  max_weight: number;
+  total_volume: number;
+  sets: WorkoutSet[];
+}
 const BACKEND_URL = "http://localhost:8000";
 
 export async function fetchSessions() {
@@ -20,7 +40,10 @@ export async function fetchSessions() {
   }
 }
 
-export async function queryWorkout(parsedWorkout: any, date: string) {
+export async function queryWorkout(
+  parsedWorkout: any,
+  date: string
+): Promise<WorkoutQueryResult[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/query`, {
       method: "POST",
@@ -37,7 +60,9 @@ export async function queryWorkout(parsedWorkout: any, date: string) {
         `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
       );
     }
-    return await res.json();
+    const json = await res.json();
+    const result: WorkoutQueryResult[] = json.result;
+    return result;
   } catch (error) {
     console.error("Failed to query workout:", error);
     throw error;

@@ -1,13 +1,14 @@
 import React from "react";
 import { Notification } from "./Notification";
 import { MuscleGroupLastWorkout } from "./MuscleGroupLastWorkout";
+import { WorkoutQueryResult } from "../services/apiService";
 
 interface WorkoutInputProps {
   input: string;
   setInput: (val: string) => void;
   loading: boolean;
   error: string;
-  queryResult: any;
+  queryResult: WorkoutQueryResult[] | null;
   handleQuery: (input: string) => Promise<any>;
   handleConfirm: (normalized: any) => Promise<any>;
   handleCancel?: () => void;
@@ -220,7 +221,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
         </details>
       )}
       {/* Confirmation UI for normalized workout from /query */}
-      {showConfirmation && queryResult && (
+      {showConfirmation && queryResult != null && (
         <div
           style={{
             marginTop: 24,
@@ -237,16 +238,16 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
             AI Normalized Workout
           </h2>
           {/* Organized grid display for normalized workout summary */}
-          {Array.isArray(queryResult) ? (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 20,
-                marginBottom: 18,
-              }}
-            >
-              {queryResult.map((ex: any, i: number) => (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
+              marginBottom: 18,
+            }}
+          >
+            {queryResult.map((ex: WorkoutQueryResult, i: number) => {
+              return (
                 <div
                   key={i}
                   style={{
@@ -255,146 +256,184 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
                     boxShadow: "0 2px 8px rgba(0,223,0,0.10)",
                     padding: 20,
                     display: "flex",
-                    flexDirection: "column",
+                    flexDirection: "row",
                     alignItems: "flex-start",
+                    justifyContent: "space-around",
                   }}
                 >
+                  {/* column exercise details */}
                   <div
                     style={{
-                      fontWeight: 700,
-                      fontSize: 18,
-                      color: "#00df00",
-                      marginBottom: 8,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
                     }}
                   >
-                    {ex.name || ex.exercise || `Exercise ${i + 1}`}
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
-                      <span style={{ color: "#888" }}>Sets:</span>{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        {ex.sets_count ?? ex.sets ?? "-"}
-                      </span>
-                    </div>
-                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
-                      <span style={{ color: "#888" }}>Reps:</span>{" "}
-                      <span style={{ fontWeight: 600 }}>{ex.reps ?? "-"}</span>
-                    </div>
-                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
-                      <span style={{ color: "#888" }}>Max Weight:</span>{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        {ex.max_weight ?? ex.maxWeight ?? "-"}
-                      </span>
-                    </div>
-                    <div style={{ color: "#e7e7e7", fontSize: 15 }}>
-                      <span style={{ color: "#888" }}>Total Volume:</span>{" "}
-                      <span style={{ fontWeight: 600 }}>
-                        {ex.total_volume ?? ex.totalVolume ?? "-"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : typeof queryResult === "string" ? (
-            <div
-              style={{
-                background: "#181818",
-                color: "#e7e7e7",
-                borderRadius: 10,
-                padding: 18,
-                fontSize: 16,
-                marginBottom: 18,
-                textAlign: "center",
-                fontWeight: "bold",
-                letterSpacing: 0.5,
-              }}
-            ></div>
-          ) : (
-            <div
-              style={{
-                background: "#181818",
-                color: "#e7e7e7",
-                borderRadius: 10,
-                padding: 18,
-                marginBottom: 18,
-                boxShadow: "0 2px 8px rgba(0,223,0,0.08)",
-                fontSize: 15,
-                maxWidth: 480,
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
-            >
-              <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-                {Object.entries(queryResult).map(([key, value], idx) => {
-                  let renderedValue;
-                  if (typeof value === "object") {
-                    renderedValue = JSON.stringify(value, null, 2);
-                  } else if (typeof value === "string") {
-                    renderedValue = value
-                      .split("|")
-                      .map((part: string, i: number) => (
-                        <div
-                          key={i}
-                          style={{
-                            marginBottom: 6,
-                            textAlign: "left",
-                            paddingLeft: 0,
-                          }}
-                        >
-                          {part.trim()}
-                        </div>
-                      ));
-                  } else {
-                    renderedValue = String(value);
-                  }
-                  return (
-                    <li
-                      key={idx}
+                    <div
                       style={{
-                        marginBottom: 12,
-                        paddingBottom: 8,
-                        borderBottom: "1px solid #333",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
+                        fontWeight: 700,
+                        fontSize: 18,
+                        color: "#00df00",
+                        marginBottom: 8,
                       }}
                     >
-                      <span
-                        style={{
-                          color: "#00df00",
-                          fontWeight: "bold",
-                          minWidth: 110,
-                          fontSize: 16,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {key}:
-                      </span>
-                      <span
-                        style={{
-                          color: "#e7e7e7",
-                          fontSize: 15,
-                          wordBreak: "break-word",
-                          flex: 1,
-                        }}
-                      >
-                        {renderedValue}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
+                      {ex.name.replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Date:</span>{" "}
+                      {ex.date
+                        ? new Date(ex.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                          })
+                        : "-"}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Location:</span>{" "}
+                      {ex.location}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Primary Muscle:</span>{" "}
+                      {ex.primary_muscle}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Secondary Muscle:</span>{" "}
+                      {ex.secondary_muscle ?? "-"}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Equipment:</span>{" "}
+                      {ex.equipment}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Total Sets:</span>{" "}
+                      {ex.total_sets}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Total Reps:</span>{" "}
+                      {ex.total_reps}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Max Weight:</span>{" "}
+                      {ex.max_weight}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <span style={{ color: "#888" }}>Total Volume:</span>{" "}
+                      {ex.total_volume}
+                    </div>
+                  </div>
+
+                  {/* column sets details */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 18,
+                        color: "#00df00",
+                        marginBottom: 8,
+                      }}
+                    >
+                      Sets:
+                    </div>
+                    <ul
+                      style={{
+                        listStyle: "none",
+                        padding: 0,
+                        margin: 0,
+                        color: "#e7e7e7",
+                        fontSize: 15,
+                        marginBottom: 8,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
+                      }}
+                    >
+                      {ex.sets.map((set, idx) => (
+                        <li key={idx} style={{ marginBottom: 8 }}>
+                          <span style={{ color: "#888" }}>Weight:</span>{" "}
+                          {set.weight},
+                          <span style={{ color: "#888", marginLeft: 8 }}>
+                            Reps:
+                          </span>{" "}
+                          {set.reps}
+                          {set.note && (
+                            <span style={{ color: "#ffb300", marginLeft: 8 }}>
+                              Note: {set.note}
+                            </span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
           <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
             <button
               onClick={async () => {
                 setLocalLoading(true);
-                const exercises = Array.isArray(queryResult)
-                  ? queryResult
-                  : queryResult.result;
-                await handleConfirm(exercises);
+                await handleConfirm(queryResult);
                 setLocalLoading(false);
                 setShowConfirmation(false);
                 setShowSuccess(true);
