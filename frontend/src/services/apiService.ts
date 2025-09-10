@@ -4,7 +4,14 @@ export async function fetchSessions() {
   try {
     const res = await fetch(`${BACKEND_URL}/sessions`, { method: "GET" });
     if (!res.ok) {
-      throw new Error(`Error: ${res.status} ${res.statusText}`);
+      let detail = "";
+      try {
+        const errJson = await res.json();
+        detail = errJson.detail || JSON.stringify(errJson);
+      } catch {}
+      throw new Error(
+        `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
+      );
     }
     return await res.json();
   } catch (error) {
@@ -21,7 +28,14 @@ export async function queryWorkout(parsedWorkout: any, date: string) {
       body: JSON.stringify({ query: parsedWorkout, date: date }),
     });
     if (!res.ok) {
-      throw new Error(`Error: ${res.status} ${res.statusText}`);
+      let detail = "";
+      try {
+        const errJson = await res.json();
+        detail = errJson.detail || JSON.stringify(errJson);
+      } catch {}
+      throw new Error(
+        `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
+      );
     }
     return await res.json();
   } catch (error) {
@@ -38,7 +52,14 @@ export async function submitWorkout(normalized: any) {
       body: JSON.stringify({ exercises: normalized }),
     });
     if (!res.ok) {
-      throw new Error(`Error: ${res.status} ${res.statusText}`);
+      let detail = "";
+      try {
+        const errJson = await res.json();
+        detail = errJson.detail || JSON.stringify(errJson);
+      } catch {}
+      throw new Error(
+        `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
+      );
     }
     return await res.json();
   } catch (error) {
@@ -53,7 +74,14 @@ export async function fetchLastWorkoutByMuscle() {
       method: "GET",
     });
     if (!res.ok) {
-      throw new Error(`Error: ${res.status} ${res.statusText}`);
+      let detail = "";
+      try {
+        const errJson = await res.json();
+        detail = errJson.detail || JSON.stringify(errJson);
+      } catch {}
+      throw new Error(
+        `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
+      );
     }
     return await res.json();
   } catch (error) {
