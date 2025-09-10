@@ -2,8 +2,29 @@ import React from "react";
 import { Chart } from "react-google-charts";
 import ExerciseHeader from "./ExerciseHeader";
 import ChartSwitcher from "./ChartSwitcher";
-import ExerciseChart from "./ExerciseChart";
+import { Line, Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import LoadingSpinner from "./LoadingSpinner";
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 //TODO: refactor to sessions
 interface Session {
@@ -80,11 +101,73 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
       <div
         style={{ display: "flex", gap: 12, marginTop: 0, alignItems: "center" }}
       >
-        <ExerciseChart
-          activeChart={activeChart}
-          lineData={lineData}
-          barData={barData}
-        />
+        {/* Inline chart rendering logic */}
+        {(() => {
+          // Convert Google Chart data format to Chart.js format
+          let chartData;
+          if (activeChart === "line") {
+            const labels = lineData.slice(1).map((row) => row[0]);
+            const weights = lineData.slice(1).map((row) => row[1]);
+            const reps = lineData.slice(1).map((row) => row[2]);
+            chartData = {
+              labels,
+              datasets: [
+                {
+                  label: "Weight",
+                  data: weights,
+                  borderColor: "#00df00",
+                  backgroundColor: "rgba(0,223,0,0.2)",
+                },
+                {
+                  label: "Reps",
+                  data: reps,
+                  borderColor: "#ff3333",
+                  backgroundColor: "rgba(255,51,51,0.2)",
+                },
+              ],
+            };
+          } else {
+            const labels = barData.slice(1).map((row) => row[0]);
+            const weights = barData.slice(1).map((row) => row[1]);
+            const reps = barData.slice(1).map((row) => row[3]);
+            chartData = {
+              labels,
+              datasets: [
+                {
+                  label: "Weight",
+                  data: weights,
+                  backgroundColor: "#00bfff",
+                },
+                {
+                  label: "Reps",
+                  data: reps,
+                  backgroundColor: "#ff3333",
+                },
+              ],
+            };
+          }
+          const chartOptions = {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: "top" as const,
+              },
+              title: {
+                display: true,
+                text: exerciseName + " Progress",
+              },
+            },
+          };
+          return (
+            <div style={{ width: "100%", height: "400px" }}>
+              {activeChart === "line" ? (
+                <Line data={chartData} options={chartOptions} />
+              ) : (
+                <Bar data={chartData} options={chartOptions} />
+              )}
+            </div>
+          );
+        })()}
         <ChartSwitcher
           activeChart={activeChart}
           setActiveChart={setActiveChart}
