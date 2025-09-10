@@ -68,11 +68,7 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
         margin: "8px 0",
         padding: 8,
         borderRadius: 8,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
         width: "100%",
-        minWidth: 0,
         maxWidth: "clamp(320px, 100vw, 700px)",
       }}
     >
@@ -81,7 +77,6 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          width: "100%",
           marginBottom: 8,
         }}
       >
@@ -94,152 +89,161 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
           setActiveChart={setActiveChart}
         />
       </div>
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginTop: 0,
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        {(() => {
-          let chartData;
-          // Helper to format date string to MM/DD
-          const formatDate = (dateStr: string) => {
-            const d = new Date(dateStr);
-            if (isNaN(d.getTime())) return dateStr;
-            const mm = String(d.getMonth() + 1).padStart(2, "0");
-            const dd = String(d.getDate()).padStart(2, "0");
-            return `${mm}/${dd}`;
-          };
+      <div>
+        {allSets.length > 0 ? (
+          (() => {
+            let chartData;
+            // Helper to format date string to MM/DD
+            const formatDate = (dateStr: string) => {
+              const d = new Date(dateStr);
+              if (isNaN(d.getTime())) return dateStr;
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const dd = String(d.getDate()).padStart(2, "0");
+              return `${mm}/${dd}`;
+            };
 
-          if (activeChart === "line") {
-            const labels = lineData
-              .slice(1)
-              .map((row) => formatDate(String(row[0])));
-            const weights = lineData.slice(1).map((row) => row[1]);
-            const reps = lineData.slice(1).map((row) => row[2]);
-            chartData = {
-              labels,
-              datasets: [
-                {
-                  label: "Weight",
-                  data: weights,
-                  borderColor: COLOR_WEIGHT,
-                  backgroundColor: COLOR_WEIGHT_BG,
-                },
-                {
-                  label: "Reps",
-                  data: reps,
-                  borderColor: COLOR_REPS,
-                  backgroundColor: COLOR_REPS_BG,
-                },
-              ],
-            };
-          } else {
-            const labels = barData
-              .slice(1)
-              .map((row) => formatDate(String(row[0])));
-            const weights = barData.slice(1).map((row) => row[1]);
-            const reps = barData.slice(1).map((row) => row[3]);
-            chartData = {
-              labels,
-              datasets: [
-                {
-                  label: "Weight",
-                  data: weights,
-                  backgroundColor: COLOR_WEIGHT,
-                },
-                {
-                  label: "Reps",
-                  data: reps,
-                  backgroundColor: COLOR_REPS,
-                },
-              ],
-            };
-          }
-          const chartOptions = {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: "top" as const,
-              },
-              title: {
-                display: true,
-                text: formattedName + " Progress",
-              },
-            },
-            scales: {
-              y: {
-                type: "linear" as const,
-                display: true,
-                position: "left" as const,
-                title: {
-                  display: true,
-                  text: "Weight",
-                },
-              },
-              y1: {
-                type: "linear" as const,
-                display: true,
-                position: "right" as const,
-                grid: {
-                  drawOnChartArea: false,
+            if (activeChart === "line") {
+              const labels = lineData
+                .slice(1)
+                .map((row) => formatDate(String(row[0])));
+              const weights = lineData.slice(1).map((row) => row[1]);
+              const reps = lineData.slice(1).map((row) => row[2]);
+              chartData = {
+                labels,
+                datasets: [
+                  {
+                    label: "Weight",
+                    data: weights,
+                    borderColor: COLOR_WEIGHT,
+                    backgroundColor: COLOR_WEIGHT_BG,
+                  },
+                  {
+                    label: "Reps",
+                    data: reps,
+                    borderColor: COLOR_REPS,
+                    backgroundColor: COLOR_REPS_BG,
+                  },
+                ],
+              };
+            } else {
+              const labels = barData
+                .slice(1)
+                .map((row) => formatDate(String(row[0])));
+              const weights = barData.slice(1).map((row) => row[1]);
+              const reps = barData.slice(1).map((row) => row[3]);
+              chartData = {
+                labels,
+                datasets: [
+                  {
+                    label: "Weight",
+                    data: weights,
+                    backgroundColor: COLOR_WEIGHT,
+                  },
+                  {
+                    label: "Reps",
+                    data: reps,
+                    backgroundColor: COLOR_REPS,
+                  },
+                ],
+              };
+            }
+            const chartOptions = {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "top" as const,
                 },
                 title: {
                   display: true,
-                  text: "Reps",
+                  text: formattedName + " Progress",
                 },
               },
-            },
-          };
-          return (
-            <div
-              style={{
-                flex: 1,
-                height: "min(40vw, 260px)",
-                minWidth: 0,
-              }}
-            >
-              {activeChart === "line" ? (
-                <Line
-                  data={{
-                    ...chartData,
-                    datasets: [
-                      {
-                        ...chartData.datasets[0],
-                        yAxisID: "y",
-                      },
-                      {
-                        ...chartData.datasets[1],
-                        yAxisID: "y1",
-                      },
-                    ],
-                  }}
-                  options={chartOptions}
-                />
-              ) : (
-                <Bar
-                  data={{
-                    ...chartData,
-                    datasets: [
-                      {
-                        ...chartData.datasets[0],
-                        yAxisID: "y",
-                      },
-                      {
-                        ...chartData.datasets[1],
-                        yAxisID: "y1",
-                      },
-                    ],
-                  }}
-                  options={chartOptions}
-                />
-              )}
-            </div>
-          );
-        })()}
+              scales: {
+                y: {
+                  type: "linear" as const,
+                  display: true,
+                  position: "left" as const,
+                  title: {
+                    display: true,
+                    text: "Weight",
+                  },
+                },
+                y1: {
+                  type: "linear" as const,
+                  display: true,
+                  position: "right" as const,
+                  grid: {
+                    drawOnChartArea: false,
+                  },
+                  title: {
+                    display: true,
+                    text: "Reps",
+                  },
+                },
+              },
+            };
+            return (
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ width: "100%", height: "min(40vw, 260px)" }}>
+                  {activeChart === "line" ? (
+                    <Line
+                      data={{
+                        ...chartData,
+                        datasets: [
+                          {
+                            ...chartData.datasets[0],
+                            yAxisID: "y",
+                          },
+                          {
+                            ...chartData.datasets[1],
+                            yAxisID: "y1",
+                          },
+                        ],
+                      }}
+                      options={{
+                        ...chartOptions,
+                        //   maintainAspectRatio: false,
+                      }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <Bar
+                      data={{
+                        ...chartData,
+                        datasets: [
+                          {
+                            ...chartData.datasets[0],
+                            yAxisID: "y",
+                          },
+                          {
+                            ...chartData.datasets[1],
+                            yAxisID: "y1",
+                          },
+                        ],
+                      }}
+                      options={{
+                        ...chartOptions,
+                        maintainAspectRatio: false,
+                      }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })()
+        ) : (
+          <div
+            style={{
+              minHeight: 200,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <span>No data available for this exercise.</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -252,6 +256,5 @@ function formatExerciseName(name: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
 }
-
 
 export default ExerciseCard;

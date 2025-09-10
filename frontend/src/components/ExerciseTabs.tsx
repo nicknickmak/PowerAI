@@ -128,7 +128,7 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
             key={muscle}
             onClick={() => setActiveMuscle(muscle)}
             style={{
-              fontWeight: activeMuscle === muscle ? "bold" : "normal",
+              fontWeight: "bold",
               background: activeMuscle === muscle ? "#00df00" : "#333",
               color: activeMuscle === muscle ? "#222" : "#e7e7e7",
               border: "none",
