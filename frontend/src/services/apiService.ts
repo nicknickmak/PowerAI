@@ -47,9 +47,9 @@ export async function submitWorkout(normalized: any) {
   }
 }
 
-export async function fetchRecentByMuscle() {
+export async function fetchLastWorkoutByMuscle() {
   try {
-    const res = await fetch(`${BACKEND_URL}/workouts/recent-by-muscle`, {
+    const res = await fetch(`${BACKEND_URL}/workouts/last-workout-by-muscle`, {
       method: "GET",
     });
     if (!res.ok) {

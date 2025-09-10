@@ -98,34 +98,59 @@ def submit_endpoint(request: SubmitRequest):
     except Exception as e:
         return SubmitResponse(success=False, detail=str(e))
 
-@router.get("/workouts/recent-by-muscle")
-def get_recent_workout_by_muscle():
+@router.get("/workouts/last-workout-by-muscle")
+def get_last_workout_by_muscle():
+    """
+    Get the most recent workout session for each muscle group and return the details
+    """
     db = SessionLocal()
-    # Get all muscle groups
+    # Get all muscle groups from exercises
     muscle_groups = db.query(Exercise.primary_muscle).distinct().all()
     muscle_groups = [mg[0] for mg in muscle_groups if mg[0]]
     result = {}
     for muscle in muscle_groups:
-        # Find most recent workout session for this muscle group
-        recent_set = (
-            db.query(Set)
+        # Get the most recent session that has sets for this muscle group
+        session = (
+            db.query(WorkoutSession)
+            .join(Set, WorkoutSession.id == Set.session_id)
             .join(Exercise, Set.exercise_id == Exercise.id)
-            .join(WorkoutSession, Set.session_id == WorkoutSession.id)
-            .filter(Exercise.primary_muscle == muscle)
-            .order_by(WorkoutSession.date.asc())
+            .filter(Exercise.primary_muscle == muscle, WorkoutSession.date.isnot(None))
+            .order_by(WorkoutSession.date.desc())
             .first()
         )
-        if recent_set:
-            exercise = db.query(Exercise).filter(Exercise.id == recent_set.exercise_id).first()
+
+        # If a session is found, get the the sets for this muscle group in that session
+        # return the set with the highest weight
+        if session:
+            top_set = (
+                db.query(Set)
+                .join(Exercise, Set.exercise_id == Exercise.id)
+                .filter(Set.session_id == session.id, Exercise.primary_muscle == muscle)
+                .order_by(desc(Set.weight))
+                .first()
+            )
+            if not top_set:
+                continue
+
             result[muscle] = {
-                "exercise": exercise.name if exercise else None,
-                "equipment": exercise.equipment if exercise else None,
-                "primaryMuscle": muscle,
-                "secondaryMuscle": exercise.secondary_muscle if exercise else None,
-                "lastDate": recent_set.session.date.isoformat() if recent_set.session and recent_set.session.date else None,
-                "sets": [{"weight": recent_set.weight, "reps": recent_set.reps}]
+                "session_date": session.date.isoformat() if session.date else None,
+                "location": session.location,
+                "exercise": top_set.exercise.name,
+                "equipment": top_set.exercise.equipment,
+                "primary_muscle": top_set.exercise.primary_muscle,
+                "secondary_muscle": top_set.exercise.secondary_muscle,
+                "top_set": {"weight": top_set.weight, "reps": top_set.reps, "rpe": top_set.rpe}
             }
         else:
-            result[muscle] = None
+            result[muscle] = {
+                "session_date": None,
+                "location": None,
+                "exercise": None,
+                "equipment": None,
+                "primary_muscle": None,
+                "secondary_muscle": None,
+                "top_set": None
+            }
+
     db.close()
-    return {"recent_by_muscle": result}
+    return {"last_workout_by_muscle": result}

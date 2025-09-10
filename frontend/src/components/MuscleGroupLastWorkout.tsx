@@ -1,5 +1,5 @@
 import React from "react";
-import { fetchRecentByMuscle } from "../services/apiService";
+import { fetchLastWorkoutByMuscle } from "../services/apiService";
 
 function getDaysSince(dateStr: string | null): number | null {
   if (!dateStr) return null;
@@ -14,25 +14,26 @@ function getDaysSince(dateStr: string | null): number | null {
 export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
   refresh,
 }) => {
-  const [recentByMuscle, setRecentByMuscle] = React.useState<any>(null);
+  const [lastWorkoutByMuscle, setLastWorkoutByMuscle] =
+    React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [expanded, setExpanded] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     setLoading(true);
-    fetchRecentByMuscle()
+    fetchLastWorkoutByMuscle()
       .then((data) => {
-        setRecentByMuscle(data.recent_by_muscle || {});
+        setLastWorkoutByMuscle(data["last_workout_by_muscle"] || {});
         setLoading(false);
       })
       .catch((err) => {
-        setError("Failed to fetch recent workouts by muscle.");
+        setError("Failed to fetch last workout by muscle.");
         setLoading(false);
       });
   }, [refresh]);
 
-  const muscleNames = Object.keys(recentByMuscle || {});
+  const muscleNames = Object.keys(lastWorkoutByMuscle || {});
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -93,8 +94,8 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
           }}
         >
           {muscleNames.map((muscle) => {
-            const info = recentByMuscle[muscle];
-            const days = getDaysSince(info.lastDate);
+            const info = lastWorkoutByMuscle[muscle];
+            const days = getDaysSince(info.session_date);
             const isExpanded = expanded === muscle;
             return (
               <li
@@ -160,7 +161,7 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
                   style={{
                     background: "#222",
                     borderRadius: 6,
-                    margin: "8px 16px 8px 16px",
+                    margin: "8px 0 8px 0",
                     padding: isExpanded ? "12px 16px" : "0 16px",
                     color: "#e7e7e7",
                     fontWeight: 400,
@@ -170,6 +171,7 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
                     overflow: "hidden",
                     transition:
                       "max-height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s cubic-bezier(0.4,0,0.2,1), padding 0.2s cubic-bezier(0.4,0,0.2,1)",
+                    textAlign: "left",
                   }}
                   aria-hidden={!isExpanded}
                 >
@@ -183,35 +185,41 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
                       </div>
                       <div style={{ marginBottom: 8 }}>
                         <strong>Primary Muscle:</strong>{" "}
-                        {info.primaryMuscle || "-"}
+                        {info.primary_muscle || "-"}
                       </div>
                       <div style={{ marginBottom: 8 }}>
                         <strong>Secondary Muscle:</strong>{" "}
-                        {info.secondaryMuscle || "-"}
+                        {info.secondary_muscle || "-"}
                       </div>
                       <div style={{ marginBottom: 8 }}>
-                        <strong>Last Date:</strong> {info.lastDate || "-"}
+                        <strong>Date:</strong>{" "}
+                        {info.session_date
+                          ? new Date(info.session_date).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "2-digit",
+                                day: "2-digit",
+                              }
+                            )
+                          : "-"}
                       </div>
                       <div style={{ marginBottom: 8 }}>
-                        <strong>Sets:</strong>
-                        <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
-                          {Array.isArray(info.sets) && info.sets.length > 0 ? (
-                            info.sets.map((set: any, idx: number) => (
-                              <li key={idx} style={{ marginBottom: 4 }}>
-                                <span style={{ color: "#00df00" }}>
-                                  Weight:
-                                </span>{" "}
-                                {set.weight ?? "-"} &nbsp;
-                                <span style={{ color: "#00df00" }}>
-                                  Reps:
-                                </span>{" "}
-                                {set.reps ?? "-"}
-                              </li>
-                            ))
+                        <strong>Top Set:</strong>{" "}
+                        <span style={{ margin: "6px 0 0 0", padding: 0 }}>
+                          {info.top_set ? (
+                            <>
+                              <span style={{ color: "#00df00" }}>Weight:</span>{" "}
+                              {info.top_set.weight ?? "-"} &nbsp;
+                              <span style={{ color: "#00df00" }}>
+                                Reps:
+                              </span>{" "}
+                              {info.top_set.reps ?? "-"}
+                            </>
                           ) : (
-                            <li>-</li>
+                            <>-</>
                           )}
-                        </ul>
+                        </span>
                       </div>
                     </>
                   }
