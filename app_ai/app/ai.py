@@ -112,6 +112,7 @@ EQUIPMENT_TYPES = [
 ]
 
 EXERCISE_NAMES = list(EXERCISE_DICT.keys())
+
 # Use TF-IDF for simple embedding
 _vectorizer = TfidfVectorizer().fit(EXERCISE_NAMES)
 EXERCISE_EMBEDDINGS = _vectorizer.transform(EXERCISE_NAMES).toarray().astype('float32')
@@ -134,7 +135,6 @@ def embedding_retriever(query: str, top_k: int = 5) -> list:
     query_vec = embed_text(query)
     D, I = FAISS_INDEX.search(np.array([query_vec]), top_k)
     return [EXERCISE_NAMES[i] for i in I[0]]
-
 
 def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
     """
@@ -194,7 +194,6 @@ def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
             temperature=0.2
         )
         final_content = response2.choices[0].message.content
-        # Fix for single quotes in LLM output
         if final_content.strip().startswith("{"):
             final_content = final_content.replace("'", '"')
         final_result = json.loads(final_content)
@@ -288,7 +287,7 @@ def process_query(query: list, session_date: str, location=None):
         session_date_obj = session_date
     if session_date_obj > date.today():
         raise ValueError("Session date cannot be in the future.")
-    
+
     processed_exercises = []
     for exercise in query:
         norm_result = hybrid_normalize_exercise(exercise.name)
@@ -314,8 +313,3 @@ def process_query(query: list, session_date: str, location=None):
             "sets": exercise.sets
         })
     return processed_exercises
-
-def submit_workout(processed_exercises: list):
-    """Ingest workout, process analytics, and return summary."""
-    from app.services.ingestion import ingest_workout
-    ingest_workout(processed_exercises)

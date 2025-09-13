@@ -1,28 +1,12 @@
 # API endpoints for lifting analytics app
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from typing import List
-from app.services.ai import process_query, submit_workout
-from datetime import datetime
 from app.db import SessionLocal
 from app.models import Exercise, Set, WorkoutSession
-from sqlalchemy.orm import joinedload
 from sqlalchemy import desc
+from app.services.ingestion import ingest_workout
 
 router = APIRouter()
-
-class WorkoutSet(BaseModel):
-    weight: float = None
-    reps: int = None
-    note: str = None
-
-class WorkoutExercise(BaseModel):
-    name: str
-    sets: List[WorkoutSet]
-
-class QueryRequest(BaseModel):
-    query: List[WorkoutExercise]
-    date: str
 
 class SubmitRequest(BaseModel):
     exercises: list
@@ -33,27 +17,12 @@ class SubmitResponse(BaseModel):
     success: bool
     detail: str = None
 
-from typing import Any
-class QueryResponse(BaseModel):
-    result: Any
-
-@router.get("/exercises/{id}/prs")
-def get_prs(id: int):
-    # TODO: Implement PR lookup
-    return {"prs": []}
-
-@router.get("/exercises/{id}/last")
-def get_last_session(id: int):
-    # TODO: Implement last session lookup
-    return {"last_session": None}
-
-@router.get("/summary/weekly")
-def get_weekly_summary():
-    # TODO: Implement weekly summary
-    return {"summary": {}}
-
 @router.get("/sessions")
 def get_sessions():
+    """
+    Get all workout sessions with their exercises and sets
+    TODO: move DB logic to a ingestion service
+    """
     db = SessionLocal()
     sessions_out = []
     sessions = db.query(WorkoutSession).order_by(desc(WorkoutSession.date)).all()
@@ -82,19 +51,11 @@ def get_sessions():
     db.close()
     return {"sessions": sessions_out}
 
-@router.post("/query", response_model=QueryResponse)
-def query_endpoint(request: QueryRequest):
-    try:
-        location = "Unknown"  # Replace with actual location if available in request
-        result = process_query(request.query, request.date, location=location)
-        return QueryResponse(result=result)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/submit", response_model=SubmitResponse)
 def submit_endpoint(request: SubmitRequest):
     try:
-        submit_workout(request.exercises)
+        ingest_workout(request.exercises)
         return SubmitResponse(success=True, detail="Workout submitted successfully.")
     except Exception as e:
         return SubmitResponse(success=False, detail=str(e))
@@ -103,6 +64,7 @@ def submit_endpoint(request: SubmitRequest):
 def get_last_workout_by_muscle():
     """
     Get the most recent workout session for each muscle group and return the details
+    TODO: move DB logic to a ingestion service
     """
     db = SessionLocal()
     # Get all muscle groups from exercises

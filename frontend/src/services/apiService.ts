@@ -18,11 +18,12 @@ export interface WorkoutQueryResult {
   total_volume: number;
   sets: WorkoutSet[];
 }
-const BACKEND_URL = "http://localhost:8000";
+const BACKEND_CORE_URL = "http://localhost:8000";
+const BACKEND_AI_URL = "http://localhost:8001";
 
 export async function fetchSessions() {
   try {
-    const res = await fetch(`${BACKEND_URL}/sessions`, { method: "GET" });
+    const res = await fetch(`${BACKEND_CORE_URL}/sessions`, { method: "GET" });
     if (!res.ok) {
       let detail = "";
       try {
@@ -45,7 +46,7 @@ export async function queryWorkout(
   date: string
 ): Promise<WorkoutQueryResult[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/query`, {
+    const res = await fetch(`${BACKEND_AI_URL}/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: parsedWorkout, date: date }),
@@ -71,7 +72,7 @@ export async function queryWorkout(
 
 export async function submitWorkout(normalized: any) {
   try {
-    const res = await fetch(`${BACKEND_URL}/submit`, {
+    const res = await fetch(`${BACKEND_CORE_URL}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exercises: normalized }),
@@ -95,9 +96,12 @@ export async function submitWorkout(normalized: any) {
 
 export async function fetchLastWorkoutByMuscle() {
   try {
-    const res = await fetch(`${BACKEND_URL}/workouts/last-workout-by-muscle`, {
-      method: "GET",
-    });
+    const res = await fetch(
+      `${BACKEND_CORE_URL}/workouts/last-workout-by-muscle`,
+      {
+        method: "GET",
+      }
+    );
     if (!res.ok) {
       let detail = "";
       try {

@@ -1,0 +1,7 @@
+torch
+faiss-cpu
+openai>=1.0.0
+numpy<2
+uvicorn
+fastapi
+python-dotenv
