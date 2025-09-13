@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.env
+.git
+frontend/
+*.sqlite3
+*.db
+.vscode/
+*.ipynb
+alembic/versions/__pycache__/
