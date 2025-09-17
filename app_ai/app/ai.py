@@ -64,11 +64,19 @@ EXERCISE_DICT = {
     "step up": ("Quads", "Glutes", "Dumbbell", ["step up", "step ups", "db step up", "dumbbell step up", "barbell step up"]),
     "smith machine squat": ("Quads", "Glutes", "Smith Machine", ["smith machine squat", "smith squat"]),
     "machine leg press": ("Quads", "Glutes", "Machine", ["machine leg press", "leg press machine"]),
+    "single leg extension": ("Quads", None, "Machine", [
+        "single leg extension", "unilateral leg extension", "machine single leg extension",
+        "leg extension 1 leg", "1 leg extension", "single leg ext", "unilateral leg ext", "one leg extension", "leg extension single leg", "leg extension unilateral"
+    ]),
     # Hamstrings
     "romanian deadlift": ("Hamstrings", "Glutes", "Barbell", ["romanian deadlift", "rdl", "barbell rdl", "bb rdl", "db rdl", "dumbbell rdl"]),
     "stiff leg deadlift": ("Hamstrings", "Glutes", "Barbell", ["stiff leg deadlift", "stiff-legged deadlift", "barbell stiff leg deadlift"]),
     "leg curl": ("Hamstrings", None, "Machine", ["leg curl", "hamstring curl", "machine leg curl"]),
     "machine leg curl": ("Hamstrings", None, "Machine", ["machine leg curl", "leg curl machine"]),
+    "single leg curl": ("Hamstrings", None, "Machine", [
+        "single leg curl", "unilateral leg curl", "machine single leg curl",
+        "leg curl 1 leg", "1 leg curl", "single leg hamstring curl", "unilateral leg curl", "one leg curl", "leg curl single leg", "leg curl unilateral", "single leg curl machine"
+    ]),
     # Glutes
     "hip thrust": ("Glutes", "Hamstrings", "Barbell", ["hip thrust", "barbell hip thrust", "bb hip thrust", "glute bridge", "db hip thrust", "dumbbell hip thrust"]),
     "glute bridge": ("Glutes", "Hamstrings", "Barbell", ["glute bridge", "barbell glute bridge", "bb glute bridge", "db glute bridge", "dumbbell glute bridge"]),
