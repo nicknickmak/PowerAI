@@ -7,7 +7,7 @@ export interface WorkoutSet {
 
 export interface WorkoutQueryResult {
   name: string;
-  date: string;
+  date: Date;
   location: string;
   primary_muscle: string;
   secondary_muscle: string | null;
@@ -43,7 +43,7 @@ export async function fetchSessions() {
 
 export async function queryWorkout(
   parsedWorkout: any,
-  date: string
+  date: Date
 ): Promise<WorkoutQueryResult[]> {
   try {
     const res = await fetch(`${BACKEND_AI_URL}/query`, {
@@ -62,7 +62,10 @@ export async function queryWorkout(
       );
     }
     const json = await res.json();
-    const result: WorkoutQueryResult[] = json.result;
+    const result: WorkoutQueryResult[] = json.result.map((item: any) => ({
+      ...item,
+      date: new Date(item.date),
+    }));
     return result;
   } catch (error) {
     console.error("Failed to query workout:", error);

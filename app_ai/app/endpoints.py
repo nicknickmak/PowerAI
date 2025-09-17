@@ -1,4 +1,5 @@
 
+from datetime import datetime
 from pydantic import BaseModel
 from typing import List, Optional, Any
 from fastapi import HTTPException, APIRouter
@@ -18,7 +19,7 @@ class WorkoutExercise(BaseModel):
 
 class QueryRequest(BaseModel):
     query: List[WorkoutExercise]
-    date: str
+    date: datetime
 
 class QueryResponse(BaseModel):
     result: Any

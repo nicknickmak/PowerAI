@@ -13,14 +13,15 @@ const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"];
 
 function parseWorkoutInput(
   input: string
-): [{ name: string; sets: any[] }[], string] {
+): [{ name: string; sets: any[] }[], Date] {
   // Simple parser: returns array of exercises with sets
   const lines = input
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter(Boolean);
   const result: { name: string; sets: any[] }[] = [];
-  let workoutDate = new Date().toISOString();
+  // Get current date in local time zone (YYYY-MM-DD)
+  let workoutDate = new Date();
 
   let currentExercise: { name: string; sets: any[] } | null = null;
   lines.forEach((line) => {
@@ -38,9 +39,9 @@ function parseWorkoutInput(
         const year = new Date().getFullYear();
         dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
           day
-        ).padStart(2, "0")}`;
-      }
-      workoutDate = new Date(dateStr).toISOString().split("T")[0];
+        ).padStart(2, "0")}T00:00:00`;
+    }
+    workoutDate = new Date(dateStr);
 
       // Handles LEG EXTENSIONS 1 leg
     } else if (

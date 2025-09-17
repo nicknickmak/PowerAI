@@ -1,3 +1,4 @@
+import datetime
 import re
 import os
 import numpy as np
@@ -314,17 +315,7 @@ def process_query(query: list, session_date: str, location=None):
     """
     Process a user query containing exercises with sets, normalize exercises, and compute analytics.
     """
-    from datetime import date, datetime
-    if isinstance(session_date, str):
-        session_date_clean = session_date.strip()
-        try:
-            session_date_obj = datetime.strptime(session_date_clean, "%Y-%m-%d").date()
-        except ValueError:
-            # Try parsing ISO 8601 with time
-            session_date_obj = datetime.fromisoformat(session_date_clean.replace("Z", "")).date()
-    else:
-        session_date_obj = session_date
-    if session_date_obj > date.today():
+    if session_date.date() > datetime.date.today():
         raise ValueError("Session date cannot be in the future.")
 
     processed_exercises = []

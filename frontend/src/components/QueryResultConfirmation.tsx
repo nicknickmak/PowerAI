@@ -88,11 +88,9 @@ export const QueryResultConfirmation: React.FC<
                 >
                   <span style={{ color: "#888" }}>Date:</span>{" "}
                   {ex.date
-                    ? new Date(ex.date).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                      })
+                    ? `${
+                        ex.date.getMonth() + 1
+                      }/${ex.date.getDate()}/${ex.date.getFullYear()}`
                     : "-"}
                 </div>
                 <div
