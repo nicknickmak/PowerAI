@@ -129,6 +129,20 @@ def get_muscle_groups(exercise_dict):
     return sorted(g for g in groups if g)
 
 MUSCLE_GROUPS = get_muscle_groups(EXERCISE_DICT)
+
+# Build alias list and mapping
+ALIAS_TO_CANONICAL = {}
+ALL_EXERCISE_STRINGS = []
+for canonical, (primary, secondary, equipment, aliases) in EXERCISE_DICT.items():
+    ALL_EXERCISE_STRINGS.append(canonical)
+    ALIAS_TO_CANONICAL[canonical] = canonical
+    for alias in aliases:
+        ALL_EXERCISE_STRINGS.append(alias)
+        ALIAS_TO_CANONICAL[alias] = canonical
+
+# Use TF-IDF for embedding all names and aliases
+_vectorizer = TfidfVectorizer().fit(ALL_EXERCISE_STRINGS)
+EXERCISE_EMBEDDINGS = _vectorizer.transform(ALL_EXERCISE_STRINGS).toarray().astype('float32')
 FAISS_INDEX = faiss.IndexFlatL2(EXERCISE_EMBEDDINGS.shape[1])
 FAISS_INDEX.add(EXERCISE_EMBEDDINGS)
 
@@ -143,11 +157,20 @@ def embed_text(text: str) -> np.ndarray:
 
 def embedding_retriever(query: str, top_k: int = 5) -> list:
     """
-    Retrieve top_k similar exercise names using embeddings and FAISS.
+    Retrieve top_k similar exercise canonical names using embeddings and FAISS.
     """
     query_vec = embed_text(query)
     D, I = FAISS_INDEX.search(np.array([query_vec]), top_k)
-    return [EXERCISE_NAMES[i] for i in I[0]]
+    # Map aliases back to canonical names, remove duplicates, preserve order
+    canonical_results = []
+    for idx in I[0]:
+        alias = ALL_EXERCISE_STRINGS[idx]
+        canonical = ALIAS_TO_CANONICAL.get(alias, alias)
+        if canonical not in canonical_results:
+            canonical_results.append(canonical)
+        if len(canonical_results) >= top_k:
+            break
+    return canonical_results
 
 def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
     """
