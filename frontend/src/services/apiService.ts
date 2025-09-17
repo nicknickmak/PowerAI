@@ -18,8 +18,12 @@ export interface WorkoutQueryResult {
   total_volume: number;
   sets: WorkoutSet[];
 }
-const BACKEND_CORE_URL = "http://localhost:8000";
-const BACKEND_AI_URL = "http://localhost:8001";
+
+// Use environment variables for backend URLs
+const BACKEND_CORE_URL =
+  process.env.BACKEND_CORE_URL || "http://localhost:8000";
+const BACKEND_AI_URL =
+  process.env.BACKEND_AI_URL || "http://localhost:8001";
 
 export async function fetchSessions() {
   try {
