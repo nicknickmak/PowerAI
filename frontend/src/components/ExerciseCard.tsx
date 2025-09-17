@@ -39,10 +39,21 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
 }) => {
   const [activeChart, setActiveChart] = React.useState<"line" | "bar">("bar");
   // Aggregate all sets for this exercise across sessions
-  const allSets = sessions.flatMap((session) =>
+  const allSetsRaw = sessions.flatMap((session) =>
     session.sets
       .filter((set) => set.exercise === exerciseName)
       .map((set) => ({ ...set, date: session.date }))
+  );
+  // Only keep the set with the highest weight per date
+  const setsByDate = new Map<string, (typeof allSetsRaw)[0]>();
+  allSetsRaw.forEach((set) => {
+    const existing = setsByDate.get(set.date);
+    if (!existing || set.weight > existing.weight) {
+      setsByDate.set(set.date, set);
+    }
+  });
+  const allSets = Array.from(setsByDate.values()).sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
   const formattedName = formatExerciseName(exerciseName);
