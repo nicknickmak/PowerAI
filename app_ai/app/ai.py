@@ -53,7 +53,6 @@ EXERCISE_DICT = {
     "reverse curl": ("Biceps", None, "Barbell", ["reverse curl", "barbell reverse curl", "db reverse curl", "dumbbell reverse curl"]),
     "wrist curl": ("Forearms", None, "Barbell", ["wrist curl", "reverse wrist curl", "barbell wrist curl", "db wrist curl", "dumbbell wrist curl"]),
     # Legs - Quads
-    # Quads
     "squat": ("Quads", "Glutes", "Barbell", ["squat", "back squat", "front squat", "sqaut", "squats", "barbell squat", "bb squat", "bodyweight squat", "goblet squat", "hack squat", "smith machine squat", "overhead squat"]),
     "front squat": ("Quads", "Glutes", "Barbell", ["front squat", "barbell front squat", "bb front squat"]),
     "zercher squat": ("Quads", "Glutes", "Barbell", ["zercher squat", "barbell zercher squat"]),
@@ -119,11 +118,17 @@ EQUIPMENT_TYPES = [
     "resistance band"
 ]
 
-EXERCISE_NAMES = list(EXERCISE_DICT.keys())
+def get_muscle_groups(exercise_dict):
+    groups = set()
+    for v in exercise_dict.values():
+        primary, secondary = v[0], v[1]
+        if primary:
+            groups.add(primary)
+        if secondary:
+            groups.add(secondary)
+    return sorted(g for g in groups if g)
 
-# Use TF-IDF for simple embedding
-_vectorizer = TfidfVectorizer().fit(EXERCISE_NAMES)
-EXERCISE_EMBEDDINGS = _vectorizer.transform(EXERCISE_NAMES).toarray().astype('float32')
+MUSCLE_GROUPS = get_muscle_groups(EXERCISE_DICT)
 FAISS_INDEX = faiss.IndexFlatL2(EXERCISE_EMBEDDINGS.shape[1])
 FAISS_INDEX.add(EXERCISE_EMBEDDINGS)
 
@@ -190,10 +195,13 @@ def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
         # Step 3: Check if the candidate is relevant enough, else add original exercise (LLM can format new if needed)
         selected_candidate = filtered_candidates[0] if filtered_candidates else None
         relevance_prompt = (
-            f"Given the original exercise '{original_exercise}' and the selected candidate {json.dumps(selected_candidate)}, "
-            "is the candidate relevant enough? If not, return a JSON object for the original exercise formatted as: "
-            "{'canonical_exercise': ..., 'primary_muscle': ..., 'secondary_muscle': ..., 'equipment': ...}. "
-            "Otherwise, return the candidate as is. "
+            f"Given the original exercise '{original_exercise}' and the selected candidate '{selected_candidate['name']}', "
+            "is the candidate a canonical match or a close alias? Treat the following as relevant matches: singular/plural forms, minor typos, synonyms, substring matches, and phrasing differences. "
+            "Examples of relevant matches: 'single leg extensions' vs 'single leg extension', 'leg curls' vs 'leg curl', 'bench press' vs 'bench presses', 'lat pulldown' vs 'lat pull down', 'db bench press' vs 'dumbbell bench press'. "
+            f"If the candidate is relevant or similar, return the candidate as is. If not, return a JSON object for the original exercise formatted as: "
+            "{{'canonical_exercise': ..., 'primary_muscle': (choose from %s), 'secondary_muscle': (choose from %s or null), 'equipment': (choose from %s or null)}}" % (
+                MUSCLE_GROUPS, MUSCLE_GROUPS, EQUIPMENT_TYPES
+            )
         )
         response2 = openai.chat.completions.create(
             model="gpt-3.5-turbo",
