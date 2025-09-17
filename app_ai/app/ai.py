@@ -219,12 +219,13 @@ def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
         # Step 3: Check if the candidate is relevant enough, else add original exercise (LLM can format new if needed)
         selected_candidate = filtered_candidates[0] if filtered_candidates else None
         relevance_prompt = (
-            f"Given the original exercise '{original_exercise}' and the selected candidate '{selected_candidate['name']}', "
+            f"Given the original exercise '{original_exercise}' and the selected candidate {json.dumps(selected_candidate)}, "
             "is the candidate a canonical match or a close alias? Treat the following as relevant matches: singular/plural forms, minor typos, synonyms, substring matches, and phrasing differences. "
             "Examples of relevant matches: 'single leg extensions' vs 'single leg extension', 'leg curls' vs 'leg curl', 'bench press' vs 'bench presses', 'lat pulldown' vs 'lat pull down', 'db bench press' vs 'dumbbell bench press'. "
-            f"If the candidate is relevant or similar, return the candidate as is. If not, return a JSON object for the original exercise formatted as: "
+            "Return a JSON object with the properties: canonical_exercise, primary_muscle, secondary_muscle, equipment. "
+            "If the candidate is relevant or similar, return the selected candidate as a JSON object with those properties. If not, return a JSON object for the original exercise formatted as: "
             "{{'canonical_exercise': ..., 'primary_muscle': (choose from %s), 'secondary_muscle': (choose from %s or null), 'equipment': (choose from %s or null)}}" % (
-                MUSCLE_GROUPS, MUSCLE_GROUPS, EQUIPMENT_TYPES
+            json.dumps(MUSCLE_GROUPS), json.dumps(MUSCLE_GROUPS), json.dumps(EQUIPMENT_TYPES)
             )
         )
         response2 = openai.chat.completions.create(
