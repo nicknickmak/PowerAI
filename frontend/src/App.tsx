@@ -41,7 +41,12 @@ function parseWorkoutInput(
         ).padStart(2, "0")}`;
       }
       workoutDate = new Date(dateStr).toISOString().split("T")[0];
-    } else if (/^[A-Za-z ]+$/.test(line)) {
+
+      // Handles LEG EXTENSIONS 1 leg
+    } else if (
+      /^(?=.*[A-Za-z])[A-Za-z0-9 ()]+$/i.test(line) &&
+      !/^\d+[xX]\s*\d+/.test(line)
+    ) {
       if (currentExercise) result.push(currentExercise);
       currentExercise = { name: line, sets: [] };
     } else if (/^\d+[xX]\s*\d+/.test(line)) {
