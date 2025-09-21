@@ -14,6 +14,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["https://power-ai-chi.vercel.app"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(endpoints.router)
 
