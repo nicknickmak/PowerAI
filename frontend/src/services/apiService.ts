@@ -20,10 +20,8 @@ export interface WorkoutQueryResult {
 }
 
 // Use environment variables for backend URLs
-const BACKEND_CORE_URL =
-  process.env.BACKEND_CORE_URL || "http://localhost:8000";
-const BACKEND_AI_URL =
-  process.env.BACKEND_AI_URL || "http://localhost:8001";
+const BACKEND_CORE_URL = process.env.REACT_APP_CORE_API_URL;
+const BACKEND_AI_URL = process.env.REACT_APP_AI_API_URL;
 
 export async function fetchSessions() {
   try {
