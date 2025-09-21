@@ -7,7 +7,7 @@ export interface WorkoutSet {
 
 export interface WorkoutQueryResult {
   name: string;
-  date: string;
+  date: Date;
   location: string;
   primary_muscle: string;
   secondary_muscle: string | null;
@@ -18,11 +18,16 @@ export interface WorkoutQueryResult {
   total_volume: number;
   sets: WorkoutSet[];
 }
-const BACKEND_URL = "http://localhost:8000";
+
+// Use environment variables for backend URLs
+const BACKEND_CORE_URL =
+  process.env.BACKEND_CORE_URL || "http://localhost:8000";
+const BACKEND_AI_URL =
+  process.env.BACKEND_AI_URL || "http://localhost:8001";
 
 export async function fetchSessions() {
   try {
-    const res = await fetch(`${BACKEND_URL}/sessions`, { method: "GET" });
+    const res = await fetch(`${BACKEND_CORE_URL}/sessions`, { method: "GET" });
     if (!res.ok) {
       let detail = "";
       try {
@@ -42,10 +47,10 @@ export async function fetchSessions() {
 
 export async function queryWorkout(
   parsedWorkout: any,
-  date: string
+  date: Date
 ): Promise<WorkoutQueryResult[]> {
   try {
-    const res = await fetch(`${BACKEND_URL}/query`, {
+    const res = await fetch(`${BACKEND_AI_URL}/query`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: parsedWorkout, date: date }),
@@ -61,7 +66,10 @@ export async function queryWorkout(
       );
     }
     const json = await res.json();
-    const result: WorkoutQueryResult[] = json.result;
+    const result: WorkoutQueryResult[] = json.result.map((item: any) => ({
+      ...item,
+      date: new Date(item.date),
+    }));
     return result;
   } catch (error) {
     console.error("Failed to query workout:", error);
@@ -71,7 +79,7 @@ export async function queryWorkout(
 
 export async function submitWorkout(normalized: any) {
   try {
-    const res = await fetch(`${BACKEND_URL}/submit`, {
+    const res = await fetch(`${BACKEND_CORE_URL}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ exercises: normalized }),
@@ -95,9 +103,12 @@ export async function submitWorkout(normalized: any) {
 
 export async function fetchLastWorkoutByMuscle() {
   try {
-    const res = await fetch(`${BACKEND_URL}/workouts/last-workout-by-muscle`, {
-      method: "GET",
-    });
+    const res = await fetch(
+      `${BACKEND_CORE_URL}/workouts/last-workout-by-muscle`,
+      {
+        method: "GET",
+      }
+    );
     if (!res.ok) {
       let detail = "";
       try {

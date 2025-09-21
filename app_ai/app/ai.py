@@ -1,3 +1,4 @@
+import datetime
 import re
 import os
 import numpy as np
@@ -24,20 +25,20 @@ EXERCISE_DICT = {
     "seated cable row": ("Back", "Biceps", "Cable", ["seated cable row", "cable row", "machine row", "row machine"]),
     "lat pulldown": ("Back", "Biceps", "Cable", ["lat pulldown", "pulldown", "lat pull down", "machine pulldown", "wide grip pulldown", "close grip pulldown"]),
     "pull up": ("Back", "Biceps", "Bodyweight", ["pull up", "pullup", "pull-ups", "pullups", "chin up", "chinup", "chin-ups", "chinups", "assisted pull up", "weighted pull up"]),
-    "face pull": ("Back", "Shoulders", "Cable", ["face pull", "cable face pull"]),
+    "face pull": ("Back", "Rear Deltoids", "Cable", ["face pull", "cable face pull"]),
     "pull over": ("Back", None, "Dumbbell", ["pull over", "pullover", "db pullover", "dumbbell pullover", "machine pullover"]),
     "reverse hyperextension": ("Back", "Glutes", "Machine", ["reverse hyperextension", "reverse hyper", "hyperextension"]),
     "single leg deadlift": ("Back", "Hamstrings", "Barbell", ["single leg deadlift", "single leg rdl", "one leg deadlift"]),
     "machine row": ("Back", "Biceps", "Machine", ["machine row", "row machine"]),
-    # Shoulders
-    "shoulder press": ("Shoulders", "Triceps", "Barbell", ["shoulder press", "overhead press", "military press", "bb shoulder press", "db shoulder press", "dumbbell shoulder press", "arnold press", "machine shoulder press"]),
-    "lateral raise": ("Shoulders", None, "Dumbbell", ["lateral raise", "side raise", "db lateral raise", "dumbbell lateral raise", "machine lateral raise"]),
-    "front raise": ("Shoulders", None, "Dumbbell", ["front raise", "db front raise", "dumbbell front raise"]),
-    "rear delt fly": ("Shoulders", None, "Dumbbell", ["rear delt fly", "reverse fly", "rear delt raise", "db rear delt fly", "dumbbell rear delt fly"]),
-    "upright row": ("Shoulders", "Traps", "Barbell", ["upright row", "barbell upright row", "db upright row", "dumbbell upright row"]),
-    "smith machine shoulder press": ("Shoulders", "Triceps", "Smith Machine", ["smith machine shoulder press", "smith shoulder press"]),
-    "machine shoulder press": ("Shoulders", "Triceps", "Machine", ["machine shoulder press", "shoulder press machine"]),
-    "cable lateral raise": ("Shoulders", None, "Cable", ["cable lateral raise", "cable side raise"]),
+    # Shoulders (split into deltoid heads)
+    "shoulder press": ("Front Deltoids", "Triceps", "Barbell", ["shoulder press", "overhead press", "military press", "bb shoulder press", "db shoulder press", "dumbbell shoulder press", "arnold press", "machine shoulder press"]),
+    "lateral raise": ("Side Deltoids", None, "Dumbbell", ["lateral raise", "side raise", "db lateral raise", "dumbbell lateral raise", "machine lateral raise"]),
+    "front raise": ("Front Deltoids", None, "Dumbbell", ["front raise", "db front raise", "dumbbell front raise"]),
+    "rear delt fly": ("Rear Deltoids", None, "Dumbbell", ["rear delt fly", "reverse fly", "rear delt raise", "db rear delt fly", "dumbbell rear delt fly"]),
+    "upright row": ("Side Deltoids", "Traps", "Barbell", ["upright row", "barbell upright row", "db upright row", "dumbbell upright row"]),
+    "smith machine shoulder press": ("Front Deltoids", "Triceps", "Smith Machine", ["smith machine shoulder press", "smith shoulder press"]),
+    "machine shoulder press": ("Front Deltoids", "Triceps", "Machine", ["machine shoulder press", "shoulder press machine"]),
+    "cable lateral raise": ("Side Deltoids", None, "Cable", ["cable lateral raise", "cable side raise"]),
     # Arms - Triceps
     "tricep pushdown": ("Triceps", None, "Cable", ["tricep pushdown", "triceps pushdown", "cable pushdown", "rope pushdown", "straight bar pushdown", ]),
     "tricep pulldown": ("Triceps", None, "Cable", ["tricep pulldown", "triceps pulldown", "cable pulldown", "rope pulldown", "straight bar pulldown"]),
@@ -53,7 +54,6 @@ EXERCISE_DICT = {
     "reverse curl": ("Biceps", None, "Barbell", ["reverse curl", "barbell reverse curl", "db reverse curl", "dumbbell reverse curl"]),
     "wrist curl": ("Forearms", None, "Barbell", ["wrist curl", "reverse wrist curl", "barbell wrist curl", "db wrist curl", "dumbbell wrist curl"]),
     # Legs - Quads
-    # Quads
     "squat": ("Quads", "Glutes", "Barbell", ["squat", "back squat", "front squat", "sqaut", "squats", "barbell squat", "bb squat", "bodyweight squat", "goblet squat", "hack squat", "smith machine squat", "overhead squat"]),
     "front squat": ("Quads", "Glutes", "Barbell", ["front squat", "barbell front squat", "bb front squat"]),
     "zercher squat": ("Quads", "Glutes", "Barbell", ["zercher squat", "barbell zercher squat"]),
@@ -64,11 +64,19 @@ EXERCISE_DICT = {
     "step up": ("Quads", "Glutes", "Dumbbell", ["step up", "step ups", "db step up", "dumbbell step up", "barbell step up"]),
     "smith machine squat": ("Quads", "Glutes", "Smith Machine", ["smith machine squat", "smith squat"]),
     "machine leg press": ("Quads", "Glutes", "Machine", ["machine leg press", "leg press machine"]),
+    "single leg extension": ("Quads", None, "Machine", [
+        "single leg extension", "unilateral leg extension", "machine single leg extension",
+        "leg extension 1 leg", "1 leg extension", "single leg ext", "unilateral leg ext", "one leg extension", "leg extension single leg", "leg extension unilateral"
+    ]),
     # Hamstrings
     "romanian deadlift": ("Hamstrings", "Glutes", "Barbell", ["romanian deadlift", "rdl", "barbell rdl", "bb rdl", "db rdl", "dumbbell rdl"]),
     "stiff leg deadlift": ("Hamstrings", "Glutes", "Barbell", ["stiff leg deadlift", "stiff-legged deadlift", "barbell stiff leg deadlift"]),
     "leg curl": ("Hamstrings", None, "Machine", ["leg curl", "hamstring curl", "machine leg curl"]),
     "machine leg curl": ("Hamstrings", None, "Machine", ["machine leg curl", "leg curl machine"]),
+    "single leg curl": ("Hamstrings", None, "Machine", [
+        "single leg curl", "unilateral leg curl", "machine single leg curl",
+        "leg curl 1 leg", "1 leg curl", "single leg hamstring curl", "unilateral leg curl", "one leg curl", "leg curl single leg", "leg curl unilateral", "single leg curl machine"
+    ]),
     # Glutes
     "hip thrust": ("Glutes", "Hamstrings", "Barbell", ["hip thrust", "barbell hip thrust", "bb hip thrust", "glute bridge", "db hip thrust", "dumbbell hip thrust"]),
     "glute bridge": ("Glutes", "Hamstrings", "Barbell", ["glute bridge", "barbell glute bridge", "bb glute bridge", "db glute bridge", "dumbbell glute bridge"]),
@@ -111,10 +119,31 @@ EQUIPMENT_TYPES = [
     "resistance band"
 ]
 
-EXERCISE_NAMES = list(EXERCISE_DICT.keys())
-# Use TF-IDF for simple embedding
-_vectorizer = TfidfVectorizer().fit(EXERCISE_NAMES)
-EXERCISE_EMBEDDINGS = _vectorizer.transform(EXERCISE_NAMES).toarray().astype('float32')
+def get_muscle_groups(exercise_dict):
+    groups = set()
+    for v in exercise_dict.values():
+        primary, secondary = v[0], v[1]
+        if primary:
+            groups.add(primary)
+        if secondary:
+            groups.add(secondary)
+    return sorted(g for g in groups if g)
+
+MUSCLE_GROUPS = get_muscle_groups(EXERCISE_DICT)
+
+# Build alias list and mapping
+ALIAS_TO_CANONICAL = {}
+ALL_EXERCISE_STRINGS = []
+for canonical, (primary, secondary, equipment, aliases) in EXERCISE_DICT.items():
+    ALL_EXERCISE_STRINGS.append(canonical)
+    ALIAS_TO_CANONICAL[canonical] = canonical
+    for alias in aliases:
+        ALL_EXERCISE_STRINGS.append(alias)
+        ALIAS_TO_CANONICAL[alias] = canonical
+
+# Use TF-IDF for embedding all names and aliases
+_vectorizer = TfidfVectorizer().fit(ALL_EXERCISE_STRINGS)
+EXERCISE_EMBEDDINGS = _vectorizer.transform(ALL_EXERCISE_STRINGS).toarray().astype('float32')
 FAISS_INDEX = faiss.IndexFlatL2(EXERCISE_EMBEDDINGS.shape[1])
 FAISS_INDEX.add(EXERCISE_EMBEDDINGS)
 
@@ -129,12 +158,20 @@ def embed_text(text: str) -> np.ndarray:
 
 def embedding_retriever(query: str, top_k: int = 5) -> list:
     """
-    Retrieve top_k similar exercise names using embeddings and FAISS.
+    Retrieve top_k similar exercise canonical names using embeddings and FAISS.
     """
     query_vec = embed_text(query)
     D, I = FAISS_INDEX.search(np.array([query_vec]), top_k)
-    return [EXERCISE_NAMES[i] for i in I[0]]
-
+    # Map aliases back to canonical names, remove duplicates, preserve order
+    canonical_results = []
+    for idx in I[0]:
+        alias = ALL_EXERCISE_STRINGS[idx]
+        canonical = ALIAS_TO_CANONICAL.get(alias, alias)
+        if canonical not in canonical_results:
+            canonical_results.append(canonical)
+        if len(canonical_results) >= top_k:
+            break
+    return canonical_results
 
 def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
     """
@@ -183,9 +220,13 @@ def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
         selected_candidate = filtered_candidates[0] if filtered_candidates else None
         relevance_prompt = (
             f"Given the original exercise '{original_exercise}' and the selected candidate {json.dumps(selected_candidate)}, "
-            "is the candidate relevant enough? If not, return a JSON object for the original exercise formatted as: "
-            "{'canonical_exercise': ..., 'primary_muscle': ..., 'secondary_muscle': ..., 'equipment': ...}. "
-            "Otherwise, return the candidate as is. "
+            "is the candidate a canonical match or a close alias? Treat the following as relevant matches: singular/plural forms, minor typos, synonyms, substring matches, and phrasing differences. "
+            "Examples of relevant matches: 'single leg extensions' vs 'single leg extension', 'leg curls' vs 'leg curl', 'bench press' vs 'bench presses', 'lat pulldown' vs 'lat pull down', 'db bench press' vs 'dumbbell bench press'. "
+            "Return a JSON object with the properties: canonical_exercise, primary_muscle, secondary_muscle, equipment. "
+            "If the candidate is relevant or similar, return the selected candidate as a JSON object with those properties. If not, return a JSON object for the original exercise formatted as: "
+            "{{'canonical_exercise': ..., 'primary_muscle': (choose from %s), 'secondary_muscle': (choose from %s or null), 'equipment': (choose from %s or null)}}" % (
+            json.dumps(MUSCLE_GROUPS), json.dumps(MUSCLE_GROUPS), json.dumps(EQUIPMENT_TYPES)
+            )
         )
         response2 = openai.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -194,7 +235,6 @@ def llm_selector(candidates: list, original_exercise: str) -> Dict[str, Any]:
             temperature=0.2
         )
         final_content = response2.choices[0].message.content
-        # Fix for single quotes in LLM output
         if final_content.strip().startswith("{"):
             final_content = final_content.replace("'", '"')
         final_result = json.loads(final_content)
@@ -276,19 +316,9 @@ def process_query(query: list, session_date: str, location=None):
     """
     Process a user query containing exercises with sets, normalize exercises, and compute analytics.
     """
-    from datetime import date, datetime
-    if isinstance(session_date, str):
-        session_date_clean = session_date.strip()
-        try:
-            session_date_obj = datetime.strptime(session_date_clean, "%Y-%m-%d").date()
-        except ValueError:
-            # Try parsing ISO 8601 with time
-            session_date_obj = datetime.fromisoformat(session_date_clean.replace("Z", "")).date()
-    else:
-        session_date_obj = session_date
-    if session_date_obj > date.today():
+    if session_date.date() > datetime.date.today():
         raise ValueError("Session date cannot be in the future.")
-    
+
     processed_exercises = []
     for exercise in query:
         norm_result = hybrid_normalize_exercise(exercise.name)
@@ -314,8 +344,3 @@ def process_query(query: list, session_date: str, location=None):
             "sets": exercise.sets
         })
     return processed_exercises
-
-def submit_workout(processed_exercises: list):
-    """Ingest workout, process analytics, and return summary."""
-    from app.services.ingestion import ingest_workout
-    ingest_workout(processed_exercises)

@@ -1,0 +1,7 @@
+torch
+faiss-cpu
+openai>=1.0.0
+scikit-learn
+uvicorn
+fastapi
+python-dotenv
