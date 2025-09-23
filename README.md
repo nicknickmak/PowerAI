@@ -6,6 +6,9 @@
 
 ## Welcome!
 
+Check out [PowerAI](https://power-ai-chi.vercel.app/) 
+- (**guests are currently not supported, so please refrain from submitting anything**)
+
 This repository showcases my skills in full-stack software engineering, machine learning, and modern web development. PowerAI is a multi-component project designed to demonstrate:
 
 - **Backend API development** with FastAPI and Python
