@@ -1,0 +1,16 @@
+{
+  "short_name": "PowerAI",
+  "name": "PowerAI Workout Tracker",
+  "icons": [
+    {
+      "src": "logo192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#222",
+  "theme_color": "#00df00",
+  "description": "PowerAI Workout Tracker"
+}
