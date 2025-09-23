@@ -36,26 +36,29 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
   sessions,
 }) => {
   // Map specific muscles to major groups
-  const muscleGroupMap: Record<string, string> = {
-    chest: "Chest",
-    pecs: "Chest",
-    back: "Back",
-    lats: "Back",
-    traps: "Back",
-    quads: "Legs",
-    hamstrings: "Legs",
-    calves: "Legs",
-    glutes: "Legs",
-    shoulders: "Shoulders",
-    delts: "Shoulders",
-    biceps: "Arms",
-    triceps: "Arms",
-    forearms: "Arms",
-    abs: "Core",
-    core: "Core",
-    obliques: "Core",
-    // Add more as needed
-  };
+const muscleGroupMap: Record<string, string> = {
+  chest: "Chest",
+  pecs: "Chest",
+  back: "Back",
+  lats: "Back",
+  traps: "Back",
+  quads: "Legs",
+  hamstrings: "Legs",
+  calves: "Legs",
+  glutes: "Legs",
+  shoulders: "Shoulders",
+  delts: "Shoulders",
+  "rear deltoids": "Shoulders",
+  "side deltoids": "Shoulders",
+  "front deltoids": "Shoulders",
+  biceps: "Arms",
+  triceps: "Arms",
+  forearms: "Arms",
+  abs: "Core",
+  core: "Core",
+  obliques: "Core",
+  // Add more as needed
+};
 
   // We want to go through each session
   // then go through each set in the session and
