@@ -312,11 +312,11 @@ def summarize_stats(stats):
     # TODO: Integrate with LLM
     return "Summary goes here."
 
-def process_query(query: list, session_date: str, location=None):
+def process_query(query: list, session_date: datetime, location=None):
     """
     Process a user query containing exercises with sets, normalize exercises, and compute analytics.
     """
-    if session_date.date() > datetime.date.today():
+    if session_date.timestamp() > datetime.datetime.now().timestamp():
         raise ValueError("Session date cannot be in the future.")
 
     processed_exercises = []

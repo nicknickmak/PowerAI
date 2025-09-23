@@ -96,7 +96,7 @@ def get_last_workout_by_muscle():
                 continue
 
             result[muscle] = {
-                "session_date": session.date.isoformat() if session.date else None,
+                "session_date": session.date if session.date else None,
                 "location": session.location,
                 "exercise": top_set.exercise.name,
                 "equipment": top_set.exercise.equipment,

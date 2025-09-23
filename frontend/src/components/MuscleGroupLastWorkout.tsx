@@ -1,9 +1,12 @@
 import React from "react";
-import { fetchLastWorkoutByMuscle } from "../services/apiService";
+import {
+  fetchLastWorkoutByMuscle,
+  LastWorkout,
+  LastWorkoutResponse,
+} from "../services/apiService";
 
-function getDaysSince(dateStr: string | null): number | null {
-  if (!dateStr) return null;
-  const date = new Date(dateStr);
+function getDaysSince(date: Date | null): number | null {
+  if (!date) return null;
   const now = new Date();
   const diff = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
@@ -14,8 +17,10 @@ function getDaysSince(dateStr: string | null): number | null {
 export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
   refresh,
 }) => {
-  const [lastWorkoutByMuscle, setLastWorkoutByMuscle] =
-    React.useState<any>(null);
+  const [lastWorkoutByMuscle, setLastWorkoutByMuscle] = React.useState<Record<
+    string,
+    LastWorkout
+  > | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [expanded, setExpanded] = React.useState<string | null>(null);
@@ -23,8 +28,8 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
   React.useEffect(() => {
     setLoading(true);
     fetchLastWorkoutByMuscle()
-      .then((data) => {
-        setLastWorkoutByMuscle(data["last_workout_by_muscle"] || {});
+      .then((data: LastWorkoutResponse) => {
+        setLastWorkoutByMuscle(data.last_workout_by_muscle || {});
         setLoading(false);
       })
       .catch((err) => {
@@ -94,8 +99,10 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
           }}
         >
           {muscleNames.map((muscle) => {
-            const info = lastWorkoutByMuscle[muscle];
-            const days = getDaysSince(info.session_date);
+            if (!lastWorkoutByMuscle) return null;
+            const info: LastWorkout | null = lastWorkoutByMuscle[muscle];
+            if (!info) return null;
+            const days = getDaysSince(info?.session_date || null);
             const isExpanded = expanded === muscle;
             return (
               <li

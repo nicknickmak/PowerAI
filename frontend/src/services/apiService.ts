@@ -1,3 +1,17 @@
+// --- Model for fetchLastWorkoutByMuscle response ---
+export interface LastWorkoutResponse {
+  last_workout_by_muscle: Record<string, LastWorkout>;
+}
+
+export interface LastWorkout {
+  session_date: Date;
+  location: string;
+  exercise: string;
+  equipment: string;
+  primary_muscle: string;
+  secondary_muscle: string | null;
+  top_set: WorkoutSet | null;
+}
 // --- Interfaces for queryWorkout response ---
 export interface WorkoutSet {
   weight: number;
@@ -99,7 +113,7 @@ export async function submitWorkout(normalized: any) {
   }
 }
 
-export async function fetchLastWorkoutByMuscle() {
+export async function fetchLastWorkoutByMuscle(): Promise<LastWorkoutResponse> {
   try {
     const res = await fetch(
       `${BACKEND_CORE_URL}/workouts/last-workout-by-muscle`,
@@ -117,7 +131,17 @@ export async function fetchLastWorkoutByMuscle() {
         `Error: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ""}`
       );
     }
-    return await res.json();
+    const json = await res.json();
+    // Convert session_date to local Date object for each entry, forcing UTC if no timezone
+    Object.values(json.last_workout_by_muscle).forEach((entry) => {
+      let dateStr = String((entry as LastWorkout).session_date);
+      // If date string does not have a timezone, append 'Z' to treat as UTC
+      if (!dateStr.match(/[zZ]|[+-]\d{2}:?\d{2}$/)) {
+        dateStr = dateStr + "Z";
+      }
+      (entry as LastWorkout).session_date = new Date(dateStr);
+    });
+    return json;
   } catch (error) {
     console.error("Failed to fetch recent workouts by muscle:", error);
     throw error;
