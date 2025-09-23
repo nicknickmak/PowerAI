@@ -8,8 +8,11 @@ import {
 function getDaysSince(date: Date | null): number | null {
   if (!date) return null;
   const now = new Date();
+  // Get local calendar day for now and date
+  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const diff = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    (nowDay.getTime() - dateDay.getTime()) / (1000 * 60 * 60 * 24)
   );
   return diff >= 0 ? diff : null;
 }
