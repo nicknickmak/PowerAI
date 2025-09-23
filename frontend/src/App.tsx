@@ -135,6 +135,7 @@ function App() {
     try {
       await submitWorkout(normalized);
       setMuscleGroupRefresh(Date.now());
+      await fetchSessions();
     } catch (e) {
       setError(
         "Failed to submit workout to backend: " +
