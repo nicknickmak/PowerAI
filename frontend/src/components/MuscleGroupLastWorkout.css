@@ -1,0 +1,32 @@
+.workout-today-gradient {
+  background: linear-gradient(90deg, #00df00 0%, #b6ffb6 100%);
+  background-size: 200% 200%;
+  background-position: 0% 50%;
+  animation: greenGradient 1s linear infinite alternate,
+    pulse-border 1s infinite ease-in-out;
+  color: #222 !important;
+  border: 3px solid #4caf50;
+  box-shadow: 0 0 8px 2px #4caf5033;
+  border-radius: 12px;
+}
+
+@keyframes greenGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse-border {
+  0% {
+    box-shadow: 0 0 8px 2px #4caf5033;
+  }
+  50% {
+    box-shadow: 0 0 16px 6px #4caf5066;
+  }
+  100% {
+    box-shadow: 0 0 8px 2px #4caf5033;
+  }
+}

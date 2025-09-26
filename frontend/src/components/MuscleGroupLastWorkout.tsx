@@ -5,6 +5,8 @@ import {
   LastWorkoutResponse,
 } from "../services/apiService";
 
+import "./MuscleGroupLastWorkout.css";
+
 function getDaysSince(date: Date | null): number | null {
   if (!date) return null;
   const now = new Date();
@@ -117,16 +119,18 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
           {sortedMuscles.map(({ muscle, info, days }) => {
             if (!info) return null;
             const isExpanded = expanded === muscle;
+            const isWorkoutToday = days === 0;
             return (
               <li
                 key={muscle}
+                className={isWorkoutToday ? "workout-today-gradient" : ""}
                 style={{
-                  background: "#333",
+                  background: isWorkoutToday ? undefined : "#333",
                   borderRadius: 6,
                   marginBottom: 8,
                   fontSize: 16,
                   fontWeight: "bold",
-                  color: "#e7e7e7",
+                  color: isWorkoutToday ? "#222" : "#e7e7e7",
                   cursor: "pointer",
                   boxShadow: isExpanded
                     ? "0 2px 12px rgba(0,223,0,0.10)"
@@ -170,7 +174,12 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
                   </span>
                   <span
                     style={{
-                      color: days === null ? "#ff3333" : "#00df00",
+                      color:
+                        days === null
+                          ? "#ff3333"
+                          : isWorkoutToday
+                          ? "#222"
+                          : "#00df00",
                       fontSize: 18,
                     }}
                   >
