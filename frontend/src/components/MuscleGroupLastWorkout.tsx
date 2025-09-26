@@ -41,7 +41,20 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
       });
   }, [refresh]);
 
-  const muscleNames = Object.keys(lastWorkoutByMuscle || {});
+  // Create a sorted array of muscle groups by days since last workout
+  const sortedMuscles = Object.entries(lastWorkoutByMuscle || {})
+    .map(([muscle, info]) => ({
+      muscle,
+      info,
+      days: getDaysSince(info?.session_date || null),
+    }))
+    .sort((a, b) => {
+      // Put nulls at the end
+      if (a.days === null && b.days === null) return 0;
+      if (a.days === null) return 1;
+      if (b.days === null) return -1;
+      return a.days - b.days;
+    });
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -78,7 +91,7 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
         >
           {error}
         </div>
-      ) : muscleNames.length === 0 ? (
+      ) : sortedMuscles.length === 0 ? (
         <div
           style={{
             textAlign: "center",
@@ -101,11 +114,8 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
             marginRight: "auto",
           }}
         >
-          {muscleNames.map((muscle) => {
-            if (!lastWorkoutByMuscle) return null;
-            const info: LastWorkout | null = lastWorkoutByMuscle[muscle];
+          {sortedMuscles.map(({ muscle, info, days }) => {
             if (!info) return null;
-            const days = getDaysSince(info?.session_date || null);
             const isExpanded = expanded === muscle;
             return (
               <li
