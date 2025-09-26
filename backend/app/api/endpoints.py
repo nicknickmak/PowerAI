@@ -69,7 +69,8 @@ def get_last_workout_by_muscle():
     db = SessionLocal()
     # Get all muscle groups from exercises
     muscle_groups = db.query(Exercise.primary_muscle).distinct().all()
-    muscle_groups = [mg[0] for mg in muscle_groups if mg[0]]
+    # Normalize muscle group names to lowercase
+    muscle_groups = [mg[0].lower() for mg in muscle_groups if mg[0]]
     result = {}
     for muscle in muscle_groups:
         # Get the most recent session that has sets for this muscle group
