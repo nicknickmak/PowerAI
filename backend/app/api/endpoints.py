@@ -78,7 +78,7 @@ def get_last_workout_by_muscle():
             db.query(WorkoutSession)
             .join(Set, WorkoutSession.id == Set.session_id)
             .join(Exercise, Set.exercise_id == Exercise.id)
-            .filter(Exercise.primary_muscle == muscle, WorkoutSession.date.isnot(None))
+            .filter(Exercise.primary_muscle.ilike(muscle), WorkoutSession.date.isnot(None))
             .order_by(WorkoutSession.date.desc())
             .first()
         )
@@ -89,7 +89,7 @@ def get_last_workout_by_muscle():
             top_set = (
                 db.query(Set)
                 .join(Exercise, Set.exercise_id == Exercise.id)
-                .filter(Set.session_id == session.id, Exercise.primary_muscle == muscle)
+                .filter(Set.session_id == session.id, Exercise.primary_muscle.ilike(muscle))
                 .order_by(desc(Set.weight))
                 .first()
             )
