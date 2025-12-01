@@ -1,19 +1,13 @@
 import React from "react";
+import styles from "./ExerciseHeader.module.css";
 
 const ExerciseHeader: React.FC<{ name: string; lastDate: string }> = ({
   name,
   lastDate,
 }) => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "flex-start",
-      marginBottom: 4,
-    }}
-  >
-    <strong>{name}</strong>
-    <span style={{ color: "#aaa", fontSize: 12, marginTop: 2 }}>
+  <div className={styles["exercise-header"]}>
+    <span className={styles["exercise-header-title"]}>{name}</span>
+    <span className={styles["exercise-header-date"]}>
       {(() => {
         const dateObj = new Date(lastDate);
         const today = new Date();

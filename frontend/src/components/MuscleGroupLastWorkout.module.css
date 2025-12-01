@@ -1,0 +1,116 @@
+/* Professional styles for MuscleGroupLastWorkout */
+.mglw-container {
+  margin-top: 32px;
+}
+.mglw-title {
+  border-bottom: 1px solid #e0e3ea;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+  color: #232946;
+  font-weight: 700;
+  font-size: 20px;
+}
+.mglw-loading,
+.mglw-error,
+.mglw-nodata {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 500;
+  margin-top: 16px;
+}
+.mglw-loading {
+  color: #6c7a89;
+}
+.mglw-error {
+  color: #b30000;
+}
+.mglw-nodata {
+  color: #6c7a89;
+}
+.mglw-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.mglw-item {
+  background: #e0e3ea;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #232946;
+  cursor: pointer;
+  border: 1px solid #e0e3ea;
+  transition: box-shadow 0.2s;
+}
+.mglw-item-today {
+  border: 2px solid #00b88a;
+  background: linear-gradient(90deg, #00df00 0%, #e0e3ea 100%);
+}
+.mglw-item-expanded {
+  box-shadow: 0 2px 12px rgba(35, 41, 70, 0.1);
+}
+.mglw-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+}
+.mglw-muscle {
+  text-transform: capitalize;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mglw-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 13px;
+  color: #3e5c76;
+  margin-right: 2px;
+}
+.mglw-days {
+  font-size: 18px;
+}
+.mglw-days-today {
+  color: #00b88a;
+}
+.mglw-days-nodata {
+  color: #b30000;
+}
+.mglw-days-normal {
+  color: #3e5c76;
+}
+.mglw-details {
+  background: #f4f4f6;
+  border-radius: 8px;
+  margin: 8px 0;
+  padding: 0 18px;
+  color: #232946;
+  font-weight: 400;
+  font-size: 15px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    padding 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+.mglw-details-expanded {
+  max-height: 500px;
+  opacity: 1;
+  padding: 12px 18px;
+}
+.mglw-details-row {
+  margin-bottom: 8px;
+}
+.mglw-topset-label {
+  color: #3e5c76;
+}
+.mglw-topset-label-today {
+  color: #00df00;
+}

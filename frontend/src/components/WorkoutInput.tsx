@@ -3,6 +3,7 @@ import { Notification } from "./Notification";
 import { MuscleGroupLastWorkout } from "./MuscleGroupLastWorkout";
 import { WorkoutQueryResult } from "../services/apiService";
 import { QueryResultConfirmation } from "./QueryResultConfirmation";
+import styles from "./WorkoutInput.module.css";
 
 interface WorkoutInputProps {
   input: string;
@@ -45,20 +46,7 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
   }, [queryResult, error]);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        background: "#181818",
-        borderRadius: 16,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-        padding: 32,
-        maxWidth: 600,
-        margin: "32px auto",
-        color: "#e7e7e7",
-        fontFamily: "Inter, Arial, sans-serif",
-        minHeight: 600,
-      }}
-    >
+    <div className={styles["workout-input"]}>
       {/* Error notification at top */}
       {error && showError && (
         <Notification
@@ -79,56 +67,18 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
       )}
       {/* Loading spinner overlay */}
       {loading && (
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            background: "rgba(24,24,24,0.85)",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 16,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                width: 54,
-                height: 54,
-                border: "6px solid #444",
-                borderTop: "6px solid #00df00",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-                marginBottom: 12,
-              }}
-            />
-            <span
-              style={{ color: "#00df00", fontWeight: "bold", fontSize: 18 }}
-            >
+        <div className={styles["workout-input-loading-overlay"]}>
+          <div className={styles["workout-input-loading-content"]}>
+            <div className={styles["workout-input-spinner"]} />
+            <span className={styles["workout-input-loading-text"]}>
               Loading...
             </span>
           </div>
-          <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
         </div>
       )}
-      <h1 style={{ textAlign: "center", marginBottom: 16 }}>Workout Input</h1>
-      <p style={{ fontSize: 16, marginBottom: 8 }}>Enter your workout below:</p>
-      <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+      <h1 className={styles["workout-input-title"]}>Workout Input</h1>
+      <p className={styles["workout-input-desc"]}>Enter your workout below:</p>
+      <div className={styles["workout-input-textarea-row"]}>
         <textarea
           rows={8}
           cols={40}
@@ -137,28 +87,10 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
           placeholder={
             "12/28\n\nINCLINE CHEST PRESS\n140X20\n150X12\n150X10\n100X8 superset\n\nTRICEP PULLDOWN"
           }
-          style={{
-            width: "100%",
-            borderRadius: 8,
-            border: "1px solid #444",
-            background: "#222",
-            color: "#e7e7e7",
-            padding: 12,
-            fontSize: 15,
-            marginBottom: 12,
-            resize: "vertical",
-            maxWidth: 420,
-          }}
+          className={styles["workout-input-textarea"]}
         />
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 12,
-          marginBottom: 16,
-        }}
-      >
+      <div className={styles["workout-input-btn-row"]}>
         <button
           onClick={async () => {
             setLocalLoading(true);
@@ -166,72 +98,35 @@ export const WorkoutInput: React.FC<WorkoutInputProps> = ({
             setLocalLoading(false);
           }}
           disabled={localLoading || loading}
-          style={{
-            background: "#00df00",
-            color: "#222",
-            border: "none",
-            borderRadius: 6,
-            padding: "8px 16px",
-            fontWeight: "bold",
-            cursor: localLoading || loading ? "not-allowed" : "pointer",
-            opacity: localLoading || loading ? 0.6 : 1,
-          }}
+          className={styles["workout-input-btn"]}
         >
           Parse Workout (AI)
         </button>
       </div>
-      {error && <div style={{ color: "red", marginBottom: 12 }}>{error}</div>}
+      {error && <div className={styles["workout-input-error"]}>{error}</div>}
 
       {/* Error log box, aesthetic and expandable */}
       {error && (
-        <details
-          style={{
-            background: "#2a1a1a",
-            border: "1px solid #ff3333",
-            borderRadius: 10,
-            padding: "16px 20px",
-            marginBottom: 18,
-            color: "#ffb3b3",
-            boxShadow: "0 2px 8px rgba(255,51,51,0.08)",
-            fontFamily: "Fira Mono, monospace",
-            fontSize: 15,
-            maxWidth: 520,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
-          <summary
-            style={{
-              fontWeight: "bold",
-              color: "#ff3333",
-              fontSize: 17,
-              cursor: "pointer",
-            }}
-          >
+        <details className={styles["workout-input-details"]}>
+          <summary className={styles["workout-input-details-summary"]}>
             Error Details
           </summary>
-          <pre
-            style={{
-              marginTop: 10,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-            }}
-          >
-            {error}
-          </pre>
+          <pre className={styles["workout-input-details-pre"]}>{error}</pre>
         </details>
       )}
-      {/* Confirmation UI for normalized workout from /query */}
+
+      {/* Confirmation dialog for parsed workout */}
       {showConfirmation && queryResult && (
         <QueryResultConfirmation
-          handleQuery={handleQuery}
           queryResult={queryResult}
+          handleQuery={handleQuery}
           handleConfirm={handleConfirm}
           handleCancel={handleCancel}
           setShowConfirmation={setShowConfirmation}
           setShowSuccess={setShowSuccess}
         />
       )}
+
       <MuscleGroupLastWorkout refresh={muscleGroupRefresh} />
     </div>
   );

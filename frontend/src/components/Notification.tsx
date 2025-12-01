@@ -15,27 +15,27 @@ const typeStyles: Record<
   { bg: string; border: string; color: string; label: string }
 > = {
   success: {
-    bg: "#1a2a1a",
-    border: "#00df00",
-    color: "#b3ffb3",
+    bg: "#e0f7ea",
+    border: "#00b88a",
+    color: "#232946",
     label: "Success:",
   },
   info: {
-    bg: "#1a1a2a",
-    border: "#3399ff",
-    color: "#b3d1ff",
+    bg: "#e0e3ea",
+    border: "#3e5c76",
+    color: "#232946",
     label: "Info:",
   },
   error: {
-    bg: "#2a1a1a",
-    border: "#ff3333",
-    color: "#ffb3b3",
+    bg: "#fbeaea",
+    border: "#b30000",
+    color: "#232946",
     label: "Error:",
   },
   warning: {
-    bg: "#2a2a1a",
+    bg: "#fffbe0",
     border: "#ffd700",
-    color: "#fff3b3",
+    color: "#232946",
     label: "Warning:",
   },
 };
@@ -61,7 +61,7 @@ export const Notification: React.FC<NotificationProps> = ({
         borderRadius: 10,
         color,
         boxShadow: `0 2px 8px ${border}33`,
-        fontFamily: "Fira Mono, monospace",
+        fontFamily: "Inter, Arial, sans-serif",
         fontSize: 15,
         minWidth: 320,
         maxWidth: 520,

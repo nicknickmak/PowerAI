@@ -1,0 +1,22 @@
+/*
+  Professional UI styles for ExerciseHeader
+*/
+.exercise-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 4px;
+  gap: 2px;
+}
+.exercise-header-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #232946;
+  letter-spacing: 0.5px;
+  font-family: "Inter", Arial, sans-serif;
+}
+.exercise-header-date {
+  color: #6c7a89;
+  font-size: 13px;
+  margin-top: 2px;
+}

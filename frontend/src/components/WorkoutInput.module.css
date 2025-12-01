@@ -1,0 +1,108 @@
+/*
+  Professional UI styles for WorkoutInput
+*/
+.workout-input {
+  position: relative;
+  background: #f4f4f6;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(35, 41, 70, 0.1);
+  padding: 36px;
+  max-width: 640px;
+  margin: 32px auto;
+  color: #232946;
+  font-family: "Inter", Arial, sans-serif;
+  min-height: 600px;
+  border: 1px solid #e0e3ea;
+}
+.workout-input-title {
+  text-align: center;
+  margin-bottom: 16px;
+  color: #3e5c76;
+  font-weight: 700;
+  font-size: 22px;
+}
+.workout-input-desc {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #6c7a89;
+}
+.workout-input-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #e0e3ea;
+  background: #e0e3ea;
+  color: #232946;
+  padding: 12px;
+  font-size: 15px;
+  margin-bottom: 12px;
+  resize: vertical;
+  max-width: 420px;
+}
+.workout-input-btn-row {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.workout-input-btn {
+  background: linear-gradient(90deg, #3e5c76 0%, #232946 100%);
+  color: #f4f4f6;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(35, 41, 70, 0.1);
+}
+
+.workout-input-loading-overlay {
+  transition: all 0.2s;
+}
+.workout-input-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.workout-input-error {
+  color: #b30000;
+  margin-bottom: 12px;
+}
+.workout-input-details {
+  background: #fbeaea;
+}
+
+.workout-input-loading-content {
+  border: 1px solid #b30000;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+}
+
+.workout-input-spinner {
+  color: #b30000;
+  box-shadow: 0 2px 8px rgba(179, 0, 0, 0.08);
+  font-family: "Fira Mono", monospace;
+  font-size: 15px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.workout-input-details-summary {
+  font-weight: bold;
+  color: #b30000;
+}
+
+.workout-input-loading-text {
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.workout-input-details-pre {
+}
+
+.workout-input-textarea-row {
+  margin-top: 10px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}

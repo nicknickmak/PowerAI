@@ -1,0 +1,35 @@
+/*
+  Professional UI styles for ExerciseCard and related components
+*/
+.exercise-card {
+  background: #f4f4f6;
+  margin: 18px 0;
+  padding: 24px 18px 18px 18px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: clamp(320px, 100vw, 700px);
+  box-shadow: 0 2px 12px rgba(35, 41, 70, 0.1);
+  border: 1px solid #e0e3ea;
+}
+.exercise-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.exercise-card-chart {
+  flex: 1;
+  min-width: 0;
+}
+.exercise-card-chart-inner {
+  width: 100%;
+  height: min(40vw, 260px);
+}
+.exercise-card-empty {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 16px;
+}

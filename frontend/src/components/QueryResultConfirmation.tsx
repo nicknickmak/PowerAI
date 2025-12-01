@@ -1,5 +1,6 @@
 import React from "react";
 import { WorkoutQueryResult } from "../services/apiService";
+import styles from "./QueryResultConfirmation.module.css";
 
 interface QueryResultConfirmationProps {
   queryResult: WorkoutQueryResult[];
@@ -22,211 +23,88 @@ export const QueryResultConfirmation: React.FC<
   const [localLoading, setLocalLoading] = React.useState(false);
 
   return (
-    <div
-      style={{
-        marginTop: 24,
-        background: "#222",
-        borderRadius: 12,
-        boxShadow: "0 2px 8px rgba(0,223,0,0.08)",
-        padding: 24,
-        maxWidth: 520,
-        marginLeft: "auto",
-        marginRight: "auto",
-      }}
-    >
-      <h2 style={{ color: "#00df00", marginBottom: 12 }}>
-        AI Normalized Workout
-      </h2>
+    <div className={styles["qrc-container"]}>
+      <h2 className={styles["qrc-title"]}>AI Normalized Workout</h2>
       {/* Organized grid display for normalized workout summary */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 20,
-          marginBottom: 18,
-        }}
-      >
-        {queryResult.map((ex: WorkoutQueryResult, i: number) => {
-          return (
-            <div
-              key={i}
-              style={{
-                background: "#181818",
-                borderRadius: 12,
-                boxShadow: "0 2px 8px rgba(0,223,0,0.10)",
-                padding: 20,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "flex-start",
-                justifyContent: "space-around",
-              }}
-            >
-              {/* column exercise details */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    color: "#00df00",
-                    marginBottom: 8,
-                  }}
-                >
-                  {ex.name.replace(/\b\w/g, (c) => c.toUpperCase())}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Date:</span>{" "}
-                  {ex.date
-                    ? `${
-                        ex.date.getMonth() + 1
-                      }/${ex.date.getDate()}/${ex.date.getFullYear()}`
-                    : "-"}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Location:</span> {ex.location}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Primary Muscle:</span>{" "}
-                  {ex.primary_muscle}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Secondary Muscle:</span>{" "}
-                  {ex.secondary_muscle ?? "-"}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Equipment:</span>{" "}
-                  {ex.equipment}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Total Sets:</span>{" "}
-                  {ex.total_sets}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Total Reps:</span>{" "}
-                  {ex.total_reps}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Max Weight:</span>{" "}
-                  {ex.max_weight}
-                </div>
-                <div
-                  style={{
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                  }}
-                >
-                  <span style={{ color: "#888" }}>Total Volume:</span>{" "}
-                  {ex.total_volume}
-                </div>
+      <div className={styles["qrc-list"]}>
+        {queryResult.map((ex: WorkoutQueryResult, i: number) => (
+          <div key={i} className={styles["qrc-card"]}>
+            {/* column exercise details */}
+            <div className={styles["qrc-col"]}>
+              <div className={styles["qrc-ex-title"]}>
+                {ex.name.replace(/\b\w/g, (c) => c.toUpperCase())}
               </div>
-
-              {/* column sets details */}
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 700,
-                    fontSize: 18,
-                    color: "#00df00",
-                    marginBottom: 8,
-                  }}
-                >
-                  Sets:
-                </div>
-                <ul
-                  style={{
-                    listStyle: "none",
-                    padding: 0,
-                    margin: 0,
-                    color: "#e7e7e7",
-                    fontSize: 15,
-                    marginBottom: 8,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-start",
-                  }}
-                >
-                  {ex.sets.map((set, idx) => (
-                    <li key={idx} style={{ marginBottom: 8 }}>
-                      <span style={{ color: "#888" }}>Weight:</span>{" "}
-                      {set.weight},
-                      <span style={{ color: "#888", marginLeft: 8 }}>
-                        Reps:
-                      </span>{" "}
-                      {set.reps}
-                      {set.note && (
-                        <span style={{ color: "#ffb300", marginLeft: 8 }}>
-                          Note: {set.note}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Date:</span>{" "}
+                {ex.date
+                  ? `${
+                      ex.date.getMonth() + 1
+                    }/${ex.date.getDate()}/${ex.date.getFullYear()}`
+                  : "-"}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Location:</span>{" "}
+                {ex.location}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Primary Muscle:</span>{" "}
+                {ex.primary_muscle}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>
+                  Secondary Muscle:
+                </span>{" "}
+                {ex.secondary_muscle ?? "-"}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Equipment:</span>{" "}
+                {ex.equipment}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Total Sets:</span>{" "}
+                {ex.total_sets}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Total Reps:</span>{" "}
+                {ex.total_reps}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Max Weight:</span>{" "}
+                {ex.max_weight}
+              </div>
+              <div className={styles["qrc-ex-value"]}>
+                <span className={styles["qrc-ex-label"]}>Total Volume:</span>{" "}
+                {ex.total_volume}
               </div>
             </div>
-          );
-        })}
+            {/* column sets details */}
+            <div className={styles["qrc-col"]}>
+              <div className={styles["qrc-ex-title"]}>Sets:</div>
+              <ul className={styles["qrc-set-list"]}>
+                {ex.sets.map((set, idx) => (
+                  <li key={idx} style={{ marginBottom: 8 }}>
+                    <span className={styles["qrc-ex-label"]}>Weight:</span>{" "}
+                    {set.weight},
+                    <span
+                      className={styles["qrc-ex-label"]}
+                      style={{ marginLeft: 8 }}
+                    >
+                      Reps:
+                    </span>{" "}
+                    {set.reps}
+                    {set.note && (
+                      <span className={styles["qrc-set-note"]}>
+                        Note: {set.note}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
       </div>
-      <div style={{ display: "flex", gap: 16, justifyContent: "center" }}>
+      <div className={styles["qrc-btn-row"]}>
         <button
           onClick={async () => {
             setLocalLoading(true);
@@ -235,17 +113,7 @@ export const QueryResultConfirmation: React.FC<
             setShowConfirmation(false);
             setShowSuccess(true);
           }}
-          style={{
-            background: "#00df00",
-            color: "#222",
-            border: "none",
-            borderRadius: 6,
-            padding: "8px 20px",
-            fontWeight: "bold",
-            fontSize: 16,
-            cursor: localLoading ? "not-allowed" : "pointer",
-            opacity: localLoading ? 0.6 : 1,
-          }}
+          className={styles["qrc-btn-confirm"]}
           disabled={localLoading}
         >
           Confirm & Submit
@@ -255,16 +123,7 @@ export const QueryResultConfirmation: React.FC<
             setShowConfirmation(false);
             if (handleCancel) handleCancel();
           }}
-          style={{
-            background: "#444",
-            color: "#e7e7e7",
-            border: "none",
-            borderRadius: 6,
-            padding: "8px 20px",
-            fontWeight: "bold",
-            fontSize: 16,
-            cursor: "pointer",
-          }}
+          className={styles["qrc-btn-cancel"]}
         >
           Cancel
         </button>

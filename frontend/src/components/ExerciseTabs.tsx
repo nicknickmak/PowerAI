@@ -1,6 +1,7 @@
 import React from "react";
 import LoadingSpinner from "./LoadingSpinner";
 import ExerciseCard from "./ExerciseCard";
+import styles from "./ExerciseTabs.module.css";
 
 export interface Session {
   date: string;
@@ -36,29 +37,29 @@ export const ExerciseTabs: React.FC<SessionsTabsProps> = ({
   sessions,
 }) => {
   // Map specific muscles to major groups
-const muscleGroupMap: Record<string, string> = {
-  chest: "Chest",
-  pecs: "Chest",
-  back: "Back",
-  lats: "Back",
-  traps: "Back",
-  quads: "Legs",
-  hamstrings: "Legs",
-  calves: "Legs",
-  glutes: "Legs",
-  shoulders: "Shoulders",
-  delts: "Shoulders",
-  "rear deltoids": "Shoulders",
-  "side deltoids": "Shoulders",
-  "front deltoids": "Shoulders",
-  biceps: "Arms",
-  triceps: "Arms",
-  forearms: "Arms",
-  abs: "Core",
-  core: "Core",
-  obliques: "Core",
-  // Add more as needed
-};
+  const muscleGroupMap: Record<string, string> = {
+    chest: "Chest",
+    pecs: "Chest",
+    back: "Back",
+    lats: "Back",
+    traps: "Back",
+    quads: "Legs",
+    hamstrings: "Legs",
+    calves: "Legs",
+    glutes: "Legs",
+    shoulders: "Shoulders",
+    delts: "Shoulders",
+    "rear deltoids": "Shoulders",
+    "side deltoids": "Shoulders",
+    "front deltoids": "Shoulders",
+    biceps: "Arms",
+    triceps: "Arms",
+    forearms: "Arms",
+    abs: "Core",
+    core: "Core",
+    obliques: "Core",
+    // Add more as needed
+  };
 
   // We want to go through each session
   // then go through each set in the session and
@@ -94,57 +95,17 @@ const muscleGroupMap: Record<string, string> = {
   const exerciseNames = Object.keys(exerciseToSessions);
 
   return (
-    <div
-      style={{
-        background: "#181818",
-        borderRadius: 16,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.12)",
-        padding: "clamp(12px, 5vw, 32px)",
-        maxWidth: 700,
-        color: "#e7e7e7",
-        fontFamily: "Inter, Arial, sans-serif",
-      }}
-    >
-      <h1
-        style={{
-          textAlign: "center",
-          marginBottom: 18,
-          color: "#00df00",
-          fontWeight: 900,
-          fontSize: 32,
-          letterSpacing: 1,
-        }}
-      >
-        My Exercises
-      </h1>
-      <div
-        style={{
-          marginBottom: 18,
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          gap: 12,
-        }}
-      >
+    <div className={styles["exercise-tabs"]}>
+      <h1 className={styles["exercise-tabs-title"]}>My Exercises</h1>
+      <div className={styles["exercise-tabs-nav"]}>
         {muscleGroups.map((muscle) => (
           <button
             key={muscle}
             onClick={() => setActiveMuscle(muscle)}
-            style={{
-              fontWeight: "bold",
-              background: activeMuscle === muscle ? "#00df00" : "#333",
-              color: activeMuscle === muscle ? "#222" : "#e7e7e7",
-              border: "none",
-              borderRadius: 8,
-              padding: "8px 24px",
-              fontSize: 16,
-              boxShadow:
-                activeMuscle === muscle
-                  ? "0 2px 8px rgba(0,223,0,0.08)"
-                  : "none",
-              transition: "all 0.2s",
-              cursor: "pointer",
-            }}
+            className={
+              styles["exercise-tabs-btn"] +
+              (activeMuscle === muscle ? " " + styles["active"] : "")
+            }
           >
             {muscle}
           </button>
@@ -154,15 +115,7 @@ const muscleGroupMap: Record<string, string> = {
         {loading ? (
           <LoadingSpinner message="Loading sessions..." />
         ) : exerciseNames.length === 0 ? (
-          <div
-            style={{
-              textAlign: "center",
-              color: "#ff3333",
-              fontWeight: "bold",
-              fontSize: 18,
-              marginTop: 32,
-            }}
-          >
+          <div className={styles["exercise-tabs-empty"]}>
             No exercises for this muscle group yet.
           </div>
         ) : (

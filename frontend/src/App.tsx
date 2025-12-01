@@ -153,96 +153,49 @@ function App() {
 
   return (
     <div className="App">
-      <header
-        className="App-header no-vertical-center"
-        style={{
-          background: "#222",
-          borderRadius: 16,
-          padding: 24,
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "Inter, Arial, sans-serif",
-            fontWeight: 900,
-            fontSize: 36,
-            color: "#00df00",
-            marginBottom: 10,
-            letterSpacing: 1,
-          }}
-        >
-          PowerAI
-        </h1>
-        <nav
-          style={{
-            marginBottom: 28,
-            display: "flex",
-            justifyContent: "center",
-            gap: 16,
-          }}
-        >
-          <button
-            onClick={() => setActiveTab("workout")}
-            style={{
-              fontWeight: activeTab === "workout" ? "bold" : "normal",
-              background: activeTab === "workout" ? "#00df00" : "#333",
-              color: activeTab === "workout" ? "#222" : "#e7e7e7",
-              border: "none",
-              borderRadius: 8,
-              padding: "10px 32px",
-              fontSize: 18,
-              boxShadow:
-                activeTab === "workout"
-                  ? "0 2px 8px rgba(0,223,0,0.08)"
-                  : "none",
-              transition: "all 0.2s",
-              cursor: "pointer",
-            }}
-          >
-            Workout
-          </button>
-          <button
-            onClick={() => setActiveTab("sessions")}
-            style={{
-              fontWeight: activeTab === "sessions" ? "bold" : "normal",
-              background: activeTab === "sessions" ? "#00df00" : "#333",
-              color: activeTab === "sessions" ? "#222" : "#e7e7e7",
-              border: "none",
-              borderRadius: 8,
-              padding: "10px 32px",
-              fontSize: 18,
-              boxShadow:
-                activeTab === "sessions"
-                  ? "0 2px 8px rgba(0,223,0,0.08)"
-                  : "none",
-              transition: "all 0.2s",
-              cursor: "pointer",
-            }}
-          >
-            Exercises
-          </button>
-        </nav>
-        {activeTab === "workout" ? (
-          <WorkoutInput
-            input={input}
-            setInput={setInput}
-            loading={loading}
-            error={error}
-            queryResult={queryResult}
-            handleQuery={handleQuery}
-            handleConfirm={handleConfirm}
-            handleCancel={handleCancel}
-            muscleGroupRefresh={muscleGroupRefresh}
-          />
-        ) : (
-          <ExerciseTabs
-            loading={loading}
-            muscleGroups={MUSCLE_GROUPS}
-            activeMuscle={activeMuscle}
-            setActiveMuscle={setActiveMuscle}
-            sessions={sessions}
-          />
-        )}
+      <header className="App-header no-vertical-center redesigned-header">
+        <div className="header-content">
+          <h1 className="app-title">PowerAI</h1>
+          <nav className="main-nav">
+            <button
+              className={"nav-btn" + (activeTab === "workout" ? " active" : "")}
+              onClick={() => setActiveTab("workout")}
+            >
+              Workout
+            </button>
+            <button
+              className={
+                "nav-btn" + (activeTab === "sessions" ? " active" : "")
+              }
+              onClick={() => setActiveTab("sessions")}
+            >
+              Exercises
+            </button>
+          </nav>
+        </div>
+        <div className="main-content">
+          {activeTab === "workout" ? (
+            <WorkoutInput
+              input={input}
+              setInput={setInput}
+              loading={loading}
+              error={error}
+              queryResult={queryResult}
+              handleQuery={handleQuery}
+              handleConfirm={handleConfirm}
+              handleCancel={handleCancel}
+              muscleGroupRefresh={muscleGroupRefresh}
+            />
+          ) : (
+            <ExerciseTabs
+              loading={loading}
+              muscleGroups={MUSCLE_GROUPS}
+              activeMuscle={activeMuscle}
+              setActiveMuscle={setActiveMuscle}
+              sessions={sessions}
+            />
+          )}
+        </div>
       </header>
     </div>
   );

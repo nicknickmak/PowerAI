@@ -3,6 +3,7 @@ import ChartSwitcher from "./ChartSwitcher";
 import { Line, Bar } from "react-chartjs-2";
 import React from "react";
 import { Session } from "./ExerciseTabs";
+import styles from "./ExerciseCard.module.css";
 
 import {
   Chart as ChartJS,
@@ -28,10 +29,10 @@ ChartJS.register(
 );
 
 // Chart color variables (shared for both line and bar)
-const COLOR_WEIGHT = "#00df00";
-const COLOR_WEIGHT_BG = "rgba(0,223,0,0.2)";
-const COLOR_REPS = "#33adffff";
-const COLOR_REPS_BG = "rgba(255,51,51,0.2)";
+const COLOR_WEIGHT = "#3e5c76";
+const COLOR_WEIGHT_BG = "rgba(62,92,118,0.18)";
+const COLOR_REPS = "#00b88a";
+const COLOR_REPS_BG = "rgba(0,184,138,0.18)";
 
 const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
   sessions,
@@ -73,24 +74,8 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
     ]),
   ];
   return (
-    <div
-      style={{
-        background: "#222",
-        margin: "8px 0",
-        padding: 8,
-        borderRadius: 8,
-        width: "100%",
-        maxWidth: "clamp(320px, 100vw, 700px)",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 8,
-        }}
-      >
+    <div className={styles["exercise-card"]}>
+      <div className={styles["exercise-card-header"]}>
         <ExerciseHeader
           name={formattedName}
           lastDate={allSets.length > 0 ? allSets[allSets.length - 1].date : ""}
@@ -100,7 +85,7 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
           setActiveChart={setActiveChart}
         />
       </div>
-      <div>
+      <div className={styles["exercise-card-chart"]}>
         {allSets.length > 0 ? (
           (() => {
             let chartData;
@@ -163,10 +148,16 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
               plugins: {
                 legend: {
                   position: "top" as const,
+                  labels: {
+                    color: "#232946",
+                    font: { size: 14, family: "Inter, Arial, sans-serif" },
+                  },
                 },
                 title: {
                   display: true,
                   text: formattedName + " Progress",
+                  color: "#232946",
+                  font: { size: 18, weight: "bold" as const },
                 },
               },
               scales: {
@@ -177,7 +168,10 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
                   title: {
                     display: true,
                     text: "Weight",
+                    color: "#232946",
                   },
+                  ticks: { color: "#232946" },
+                  grid: { color: "#e0e3ea" },
                 },
                 y1: {
                   type: "linear" as const,
@@ -185,73 +179,71 @@ const ExerciseCard: React.FC<{ sessions: Session[]; exerciseName: string }> = ({
                   position: "right" as const,
                   grid: {
                     drawOnChartArea: false,
+                    color: "#e0e3ea",
                   },
                   title: {
                     display: true,
                     text: "Reps",
+                    color: "#232946",
                   },
+                  ticks: { color: "#232946" },
+                },
+                x: {
+                  ticks: { color: "#232946" },
+                  grid: { color: "#e0e3ea" },
                 },
               },
             };
             return (
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ width: "100%", height: "min(40vw, 260px)" }}>
-                  {activeChart === "line" ? (
-                    <Line
-                      data={{
-                        ...chartData,
-                        datasets: [
-                          {
-                            ...chartData.datasets[0],
-                            yAxisID: "y",
-                          },
-                          {
-                            ...chartData.datasets[1],
-                            yAxisID: "y1",
-                          },
-                        ],
-                      }}
-                      options={{
-                        ...chartOptions,
-                        //   maintainAspectRatio: false,
-                      }}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  ) : (
-                    <Bar
-                      data={{
-                        ...chartData,
-                        datasets: [
-                          {
-                            ...chartData.datasets[0],
-                            yAxisID: "y",
-                          },
-                          {
-                            ...chartData.datasets[1],
-                            yAxisID: "y1",
-                          },
-                        ],
-                      }}
-                      options={{
-                        ...chartOptions,
-                        maintainAspectRatio: false,
-                      }}
-                      style={{ width: "100%", height: "100%" }}
-                    />
-                  )}
-                </div>
+              <div className={styles["exercise-card-chart-inner"]}>
+                {activeChart === "line" ? (
+                  <Line
+                    data={{
+                      ...chartData,
+                      datasets: [
+                        {
+                          ...chartData.datasets[0],
+                          yAxisID: "y",
+                        },
+                        {
+                          ...chartData.datasets[1],
+                          yAxisID: "y1",
+                        },
+                      ],
+                    }}
+                    options={{
+                      ...chartOptions,
+                      //   maintainAspectRatio: false,
+                    }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  <Bar
+                    data={{
+                      ...chartData,
+                      datasets: [
+                        {
+                          ...chartData.datasets[0],
+                          yAxisID: "y",
+                        },
+                        {
+                          ...chartData.datasets[1],
+                          yAxisID: "y1",
+                        },
+                      ],
+                    }}
+                    options={{
+                      ...chartOptions,
+                      maintainAspectRatio: false,
+                    }}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                )}
               </div>
             );
           })()
         ) : (
-          <div
-            style={{
-              minHeight: 200,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div className={styles["exercise-card-empty"]}>
             <span>No data available for this exercise.</span>
           </div>
         )}

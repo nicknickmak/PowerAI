@@ -1,121 +1,61 @@
-import React from "react";
-import {
-  fetchLastWorkoutByMuscle,
-  LastWorkout,
-  LastWorkoutResponse,
-} from "../services/apiService";
+import React, { useEffect, useState } from "react";
+import { fetchLastWorkoutByMuscle, LastWorkout } from "../services/apiService";
+import styles from "./MuscleGroupLastWorkout.module.css";
 
-import "./MuscleGroupLastWorkout.css";
-
-function getDaysSince(date: Date | null): number | null {
-  if (!date) return null;
-  const now = new Date();
-  // Get local calendar day for now and date
-  const nowDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dateDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const diff = Math.floor(
-    (nowDay.getTime() - dateDay.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  return diff >= 0 ? diff : null;
+interface MuscleGroupLastWorkoutProps {
+  refresh?: number;
 }
 
-export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
+export const MuscleGroupLastWorkout: React.FC<MuscleGroupLastWorkoutProps> = ({
   refresh,
 }) => {
-  const [lastWorkoutByMuscle, setLastWorkoutByMuscle] = React.useState<Record<
-    string,
-    LastWorkout
-  > | null>(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [expanded, setExpanded] = React.useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>("");
+  const [muscleData, setMuscleData] = useState<
+    Record<string, LastWorkout | null>
+  >({});
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
     fetchLastWorkoutByMuscle()
-      .then((data: LastWorkoutResponse) => {
-        setLastWorkoutByMuscle(data.last_workout_by_muscle || {});
-        setLoading(false);
+      .then((data) => {
+        setMuscleData(data.last_workout_by_muscle);
+        setError("");
       })
       .catch((err) => {
-        setError("Failed to fetch last workout by muscle.");
-        setLoading(false);
-      });
+        setError("Failed to fetch last workout data.");
+        setMuscleData({});
+      })
+      .finally(() => setLoading(false));
   }, [refresh]);
-
-  // Create a sorted array of muscle groups by days since last workout
-  const sortedMuscles = Object.entries(lastWorkoutByMuscle || {})
-    .map(([muscle, info]) => ({
-      muscle,
-      info,
-      days: getDaysSince(info?.session_date || null),
-    }))
-    .sort((a, b) => {
-      // Put nulls at the end
-      if (a.days === null && b.days === null) return 0;
-      if (a.days === null) return 1;
-      if (b.days === null) return -1;
-      return a.days - b.days;
-    });
+  const sortedMuscles = Object.entries(muscleData)
+    .map(([muscle, info]) => {
+      let days = null;
+      if (info && info.session_date) {
+        const lastDate = new Date(info.session_date);
+        const today = new Date();
+        days = Math.floor(
+          (today.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+      }
+      return { muscle, info, days };
+    })
+    .sort((a, b) => (a.days ?? 9999) - (b.days ?? 9999));
 
   return (
-    <div style={{ marginTop: 32 }}>
-      <h2
-        style={{
-          borderBottom: "1px solid #333",
-          paddingBottom: 4,
-          marginBottom: 8,
-        }}
-      >
+    <div className={styles["mglw-container"]}>
+      <h2 className={styles["mglw-title"]}>
         Days Since Last Workout (per muscle group)
       </h2>
       {loading ? (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#888",
-            fontSize: 17,
-            fontWeight: 500,
-            marginTop: 16,
-          }}
-        >
-          Loading...
-        </div>
+        <div className={styles["mglw-loading"]}>Loading...</div>
       ) : error ? (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#ff3333",
-            fontSize: 17,
-            fontWeight: 500,
-            marginTop: 16,
-          }}
-        >
-          {error}
-        </div>
+        <div className={styles["mglw-error"]}>{error}</div>
       ) : sortedMuscles.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            color: "#888",
-            fontSize: 17,
-            fontWeight: 500,
-            marginTop: 16,
-          }}
-        >
-          No data
-        </div>
+        <div className={styles["mglw-nodata"]}>No data</div>
       ) : (
-        <ul
-          style={{
-            listStyle: "none",
-            padding: 0,
-            margin: 0,
-            maxWidth: 420,
-            marginLeft: "auto",
-            marginRight: "auto",
-          }}
-        >
+        <ul className={styles["mglw-list"]}>
           {sortedMuscles.map(({ muscle, info, days }) => {
             if (!info) return null;
             const isExpanded = expanded === muscle;
@@ -123,49 +63,17 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
             return (
               <li
                 key={muscle}
-                className={isWorkoutToday ? "workout-today-gradient" : ""}
-                style={{
-                  background: isWorkoutToday ? undefined : "#333",
-                  borderRadius: 6,
-                  marginBottom: 8,
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  color: isWorkoutToday ? "#222" : "#e7e7e7",
-                  cursor: "pointer",
-                  boxShadow: isExpanded
-                    ? "0 2px 12px rgba(0,223,0,0.10)"
-                    : undefined,
-                  transition: "box-shadow 0.2s",
-                }}
+                className={`${styles["mglw-item"]} ${
+                  isWorkoutToday ? styles["mglw-item-today"] : ""
+                } ${isExpanded ? styles["mglw-item-expanded"] : ""}`}
                 onClick={() => setExpanded(isExpanded ? null : muscle)}
               >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "8px 16px",
-                  }}
-                >
-                  <span
-                    style={{
-                      textTransform: "capitalize",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                    }}
-                  >
+                <div className={styles["mglw-row"]}>
+                  <span className={styles["mglw-muscle"]}>
                     <span
-                      style={{
-                        display: "inline-block",
-                        transition: "transform 0.2s",
-                        transform: isExpanded
-                          ? "rotate(90deg)"
-                          : "rotate(0deg)",
-                        fontSize: 13,
-                        color: "#e7e7e7",
-                        marginRight: 2,
-                      }}
+                      className={`${styles["mglw-arrow"]} ${
+                        isExpanded ? styles["mglw-arrow-expanded"] : ""
+                      }`}
                       aria-label={isExpanded ? "Collapse" : "Expand"}
                     >
                       ▶
@@ -173,85 +81,77 @@ export const MuscleGroupLastWorkout: React.FC<{ refresh?: number }> = ({
                     {muscle}
                   </span>
                   <span
-                    style={{
-                      color:
-                        days === null
-                          ? "#ff3333"
-                          : isWorkoutToday
-                          ? "#222"
-                          : "#00df00",
-                      fontSize: 18,
-                    }}
+                    className={
+                      days === null
+                        ? styles["mglw-days-nodata"]
+                        : isWorkoutToday
+                        ? styles["mglw-days-today"]
+                        : styles["mglw-days-normal"]
+                    }
                   >
                     {days === null ? "No data" : days}
                   </span>
                 </div>
                 <div
-                  style={{
-                    background: "#222",
-                    borderRadius: 6,
-                    margin: "8px 0 8px 0",
-                    padding: isExpanded ? "12px 16px" : "0 16px",
-                    color: "#e7e7e7",
-                    fontWeight: 400,
-                    fontSize: 15,
-                    maxHeight: isExpanded ? 500 : 0,
-                    opacity: isExpanded ? 1 : 0,
-                    overflow: "hidden",
-                    transition:
-                      "max-height 0.2s cubic-bezier(0.4,0,0.2,1), opacity 0.2s cubic-bezier(0.4,0,0.2,1), padding 0.2s cubic-bezier(0.4,0,0.2,1)",
-                    textAlign: "left",
-                  }}
-                  aria-hidden={!isExpanded}
+                  className={`${styles["mglw-details"]} ${
+                    isExpanded ? styles["mglw-details-expanded"] : ""
+                  }`}
+                  aria-hidden={!isExpanded ? "true" : "false"}
                 >
-                  {
-                    <>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Exercise:</strong> {info.exercise || "-"}
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Equipment:</strong> {info.equipment || "-"}
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Primary Muscle:</strong>{" "}
-                        {info.primary_muscle || "-"}
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Secondary Muscle:</strong>{" "}
-                        {info.secondary_muscle || "-"}
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Date:</strong>{" "}
-                        {info.session_date
-                          ? new Date(info.session_date).toLocaleDateString(
-                              "en-US",
-                              {
-                                year: "numeric",
-                                month: "2-digit",
-                                day: "2-digit",
-                              }
-                            )
-                          : "-"}
-                      </div>
-                      <div style={{ marginBottom: 8 }}>
-                        <strong>Top Set:</strong>{" "}
-                        <span style={{ margin: "6px 0 0 0", padding: 0 }}>
-                          {info.top_set ? (
-                            <>
-                              <span style={{ color: "#00df00" }}>Weight:</span>{" "}
-                              {info.top_set.weight ?? "-"} &nbsp;
-                              <span style={{ color: "#00df00" }}>
-                                Reps:
-                              </span>{" "}
-                              {info.top_set.reps ?? "-"}
-                            </>
-                          ) : (
-                            <>-</>
-                          )}
-                        </span>
-                      </div>
-                    </>
-                  }
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Exercise:</strong> {info.exercise || "-"}
+                  </div>
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Equipment:</strong> {info.equipment || "-"}
+                  </div>
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Primary Muscle:</strong>{" "}
+                    {info.primary_muscle || "-"}
+                  </div>
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Secondary Muscle:</strong>{" "}
+                    {info.secondary_muscle || "-"}
+                  </div>
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Date:</strong>{" "}
+                    {info.session_date
+                      ? new Date(info.session_date).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "2-digit", day: "2-digit" }
+                        )
+                      : "-"}
+                  </div>
+                  <div className={styles["mglw-details-row"]}>
+                    <strong>Top Set:</strong>{" "}
+                    <span>
+                      {info.top_set ? (
+                        <>
+                          <span
+                            className={
+                              isWorkoutToday
+                                ? styles["mglw-topset-label-today"]
+                                : styles["mglw-topset-label"]
+                            }
+                          >
+                            Weight:
+                          </span>{" "}
+                          {info.top_set.weight ?? "-"} &nbsp;
+                          <span
+                            className={
+                              isWorkoutToday
+                                ? styles["mglw-topset-label-today"]
+                                : styles["mglw-topset-label"]
+                            }
+                          >
+                            Reps:
+                          </span>{" "}
+                          {info.top_set.reps ?? "-"}
+                        </>
+                      ) : (
+                        <>-</>
+                      )}
+                    </span>
+                  </div>
                 </div>
               </li>
             );

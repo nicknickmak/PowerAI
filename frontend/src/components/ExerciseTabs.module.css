@@ -1,0 +1,52 @@
+/*
+  Professional UI styles for ExerciseTabs
+*/
+.exercise-tabs {
+  background: #f4f4f6;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(35, 41, 70, 0.1);
+  padding: clamp(18px, 5vw, 36px);
+  max-width: 700px;
+  color: #232946;
+  font-family: "Inter", Arial, sans-serif;
+  margin: 0 auto;
+}
+.exercise-tabs-title {
+  text-align: center;
+  margin-bottom: 18px;
+  color: #232946;
+  font-weight: 800;
+  font-size: 2.2rem;
+  letter-spacing: 1px;
+}
+.exercise-tabs-nav {
+  margin-bottom: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+.exercise-tabs-btn {
+  font-weight: 600;
+  background: #e0e3ea;
+  color: #232946;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 24px;
+  font-size: 16px;
+  box-shadow: none;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.exercise-tabs-btn.active {
+  background: linear-gradient(90deg, #3e5c76 0%, #232946 100%);
+  color: #f4f4f6;
+  box-shadow: 0 4px 16px rgba(35, 41, 70, 0.12);
+}
+.exercise-tabs-empty {
+  text-align: center;
+  color: #b30000;
+  font-weight: 600;
+  font-size: 18px;
+  margin-top: 32px;
+}
